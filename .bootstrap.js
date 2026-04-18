@@ -79,7 +79,8 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun add canvas-confetti@^1.9.0",
-    "bun add lucide-react clsx tailwind-merge framer-motion zustand"
+    "bun add lucide-react clsx tailwind-merge framer-motion zustand",
+    "bun add canvas-confetti"
 ];
     
     if (commands.length === 0) {
