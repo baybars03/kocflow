@@ -2,13 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCoaches } from '@/hooks/use-tyt-api';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { Star, ArrowRight, Loader2, Award, Users } from 'lucide-react';
+import { Star, ArrowRight, Loader2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 export function PopularCoaches() {
   const { data: coaches, isLoading } = useCoaches();
   const topCoaches = coaches?.slice(0, 3) || [];
   return (
-    <section className="space-y-12 py-20 px-4 bg-slate-50 border-y-8 border-playful-dark -mx-4 sm:-mx-8 lg:-mx-12 px-4 sm:px-8 lg:px-12">
+    <section className="space-y-12 py-20 bg-slate-50 border-y-8 border-playful-dark -mx-4 sm:-mx-8 lg:-mx-12 px-4 sm:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left space-y-2">
@@ -20,7 +20,9 @@ export function PopularCoaches() {
           </Link>
         </div>
         {isLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-playful-red w-12 h-12" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-playful-red w-12 h-12" />
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {topCoaches.map((coach, i) => (
@@ -30,6 +32,7 @@ export function PopularCoaches() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
+                className="h-full"
               >
                 <PlayfulCard className="p-0 overflow-hidden flex flex-col h-full bg-white group border-playful-dark shadow-playful hover:-translate-y-2 transition-all">
                   <div className="aspect-[4/3] relative overflow-hidden border-b-4 border-playful-dark">
@@ -40,7 +43,7 @@ export function PopularCoaches() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 space-y-4 flex-1 flex flex-col">
                     <div className="flex justify-between items-start">
                       <h3 className="text-2xl font-black">{coach.displayName}</h3>
                       <div className="flex items-center gap-1 font-black bg-slate-100 px-2 py-1 rounded-lg border-2 border-playful-dark">
@@ -54,9 +57,11 @@ export function PopularCoaches() {
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-100 font-bold text-muted-foreground text-sm">
+                    <div className="flex items-center justify-between pt-4 mt-auto border-t-2 border-dashed border-slate-100 font-bold text-muted-foreground text-sm">
                        <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {coach.studentCount} Öğrenci</span>
-                       <Link to={`/coach/${coach.id}`} className="text-playful-red hover:underline flex items-center gap-1">İncele <ArrowRight className="w-4 h-4" /></Link>
+                       <Link to={`/coach/${coach.id}`} className="text-playful-red hover:underline flex items-center gap-1 font-black">
+                         İncele <ArrowRight className="w-4 h-4" />
+                       </Link>
                     </div>
                   </div>
                 </PlayfulCard>

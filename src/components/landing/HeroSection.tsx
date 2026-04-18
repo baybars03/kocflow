@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Rocket, Sparkles, Zap, AlarmClock } from 'lucide-react';
+import { Rocket, Zap, AlarmClock } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
+const TARGET_DATE = new Date('2025-06-14');
 export function HeroSection() {
-  const targetDate = new Date('2025-06-14');
   const [days, setDays] = useState(0);
   useEffect(() => {
-    setDays(differenceInDays(targetDate, new Date()));
+    setDays(differenceInDays(TARGET_DATE, new Date()));
   }, []);
   return (
     <section className="text-center space-y-10 pt-16 md:pt-24 px-4 overflow-hidden">
@@ -40,14 +40,14 @@ export function HeroSection() {
         Netlerini yapay zeka ve profesyonel koçlarla <span className="text-playful-dark underline decoration-playful-red decoration-4">zirveye taşı</span>. TYT artık bir stres değil, bir oyun alanı!
       </p>
       <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
-        <Link 
-          to="/signup" 
+        <Link
+          to="/signup"
           className="playful-button bg-playful-red text-white text-3xl py-8 px-12 group"
         >
           Hemen Başla! <Rocket className="w-10 h-10 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
         </Link>
-        <Link 
-          to="/marketplace" 
+        <Link
+          to="/marketplace"
           className="playful-button bg-white text-playful-dark text-xl py-6 px-10"
         >
           Koçları İncele <Zap className="w-6 h-6 fill-playful-yellow text-playful-dark" />

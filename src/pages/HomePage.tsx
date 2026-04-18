@@ -12,14 +12,14 @@ import { toast } from 'sonner';
 import { useSwipeable } from 'react-swipeable';
 import { AITutor } from '@/components/ai/AITutor';
 import type { TYTSubject } from '@shared/types';
+const TARGET_DATE = new Date('2025-06-14');
 export function HomePage() {
   const navigate = useNavigate();
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
-  const targetDate = new Date('2025-06-14');
   const now = new Date();
-  const examPassed = isAfter(now, targetDate);
-  const remainingDays = differenceInDays(targetDate, now);
+  const examPassed = isAfter(now, TARGET_DATE);
+  const remainingDays = differenceInDays(TARGET_DATE, now);
   const { data: tasks, createTask } = useTasks(userId);
   const { data: stats } = useStats(userId);
   const { data: scores } = useScores(userId);

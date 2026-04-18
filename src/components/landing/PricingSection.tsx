@@ -1,37 +1,37 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Sparkles, Star, Zap } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { motion } from 'framer-motion';
+const PRICING_TIERS = [
+  {
+    name: 'Free',
+    price: '0',
+    description: 'Temel araçlarla başla',
+    features: ['AI Task Önerileri', 'Günlük Görev Takibi', 'Sınırlı Pomodoro'],
+    color: 'bg-white',
+    button: 'Hemen Başla'
+  },
+  {
+    name: 'Basic',
+    price: '99',
+    description: 'Disiplin kazananlar için',
+    features: ['Koç Marketplace Erişimi', 'Sınırsız Görev & Pomodoro', 'Net Gelişim Grafikleri', 'Özel Başarı Rozetleri'],
+    color: 'bg-playful-teal',
+    button: 'Abone Ol',
+    popular: false
+  },
+  {
+    name: 'Pro',
+    price: '199',
+    description: 'Zirveye oynayan şampiyonlara',
+    features: ['AI Tutor (Limitsiz)', 'Canlı Rehberlik Seansları', 'Grup Etütleri', 'Veli Bilgilendirme Paneli'],
+    color: 'bg-playful-red',
+    button: 'Pro\'ya Geç',
+    popular: true
+  }
+];
 export function PricingSection() {
-  const tiers = [
-    {
-      name: 'Free',
-      price: '0',
-      description: 'Temel araçlarla başla',
-      features: ['AI Task Önerileri', 'Günlük Görev Takibi', 'Sınırlı Pomodoro'],
-      color: 'bg-white',
-      button: 'Hemen Başla'
-    },
-    {
-      name: 'Basic',
-      price: '99',
-      description: 'Disiplin kazananlar için',
-      features: ['Koç Marketplace Erişimi', 'Sınırsız Görev & Pomodoro', 'Net Gelişim Grafikleri', 'Özel Başarı Rozetleri'],
-      color: 'bg-playful-teal',
-      button: 'Abone Ol',
-      popular: false
-    },
-    {
-      name: 'Pro',
-      price: '199',
-      description: 'Zirveye oynayan şampiyonlara',
-      features: ['AI Tutor (Limitsiz)', 'Canlı Rehberlik Seansları', 'Grup Etütleri', 'Veli Bilgilendirme Paneli'],
-      color: 'bg-playful-red',
-      button: 'Pro\'ya Geç',
-      popular: true
-    }
-  ];
   return (
     <section className="space-y-16 py-20 px-4">
       <div className="text-center space-y-4">
@@ -39,7 +39,7 @@ export function PricingSection() {
         <p className="font-bold text-muted-foreground text-xl">Hedeflerine göre en uygun paketi belirle.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {tiers.map((tier, i) => (
+        {PRICING_TIERS.map((tier, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -48,7 +48,7 @@ export function PricingSection() {
             className="relative"
           >
             {tier.popular && (
-              <motion.div 
+              <motion.div
                 animate={{ rotate: [0, -3, 3, 0], scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className="absolute -top-6 left-1/2 -translate-x-1/2 z-10 bg-playful-yellow border-4 border-playful-dark px-4 py-1 rounded-full font-black text-sm uppercase shadow-playful"
@@ -75,8 +75,8 @@ export function PricingSection() {
                   </div>
                 ))}
               </div>
-              <Link 
-                to="/signup" 
+              <Link
+                to="/signup"
                 className={`playful-button text-xl py-6 ${tier.name === 'Free' ? 'bg-playful-dark text-white' : 'bg-white text-playful-dark'}`}
               >
                 {tier.button}

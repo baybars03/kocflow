@@ -5,13 +5,25 @@ import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useScores, useLeaderboard } from '@/hooks/use-tyt-api';
 import { useAuth } from '@/hooks/use-auth';
-import { cn } from '@/lib/utils';
 import { Plus, Loader2, TrendingUp, Trophy, Calculator, GraduationCap, FileDown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { DenemeScore } from '@shared/types';
+const SUBJECT_KEYS = [
+  { label: 'Türkçe', key: 'turkce' as const },
+  { label: 'Matematik', key: 'matematik' as const },
+  { label: 'Sosyal', key: 'sosyal' as const },
+  { label: 'Fen', key: 'fen' as const }
+];
+const calculateTYT = (s: Pick<DenemeScore, 'turkce' | 'matematik' | 'sosyal' | 'fen'>) => {
+  const t = s.turkce ?? 0;
+  const m = s.matematik ?? 0;
+  const soc = s.sosyal ?? 0;
+  const f = s.fen ?? 0;
+  return Math.floor(100 + (t * 3.3) + (m * 3.3) + (soc * 3.4) + (f * 3.4));
+};
 export function ProgressPage() {
   const userId = useAuth((s) => s.user?.id);
   const { data: scores, isLoading, createScore } = useScores(userId);
@@ -28,13 +40,6 @@ export function ProgressPage() {
     sosyal: 0,
     fen: 0,
     totalNet: 0
-  };
-  const calculateTYT = (s: Pick<DenemeScore, 'turkce' | 'matematik' | 'sosyal' | 'fen'>) => {
-    const t = s.turkce ?? 0;
-    const m = s.matematik ?? 0;
-    const soc = s.sosyal ?? 0;
-    const f = s.fen ?? 0;
-    return Math.floor(100 + (t * 3.3) + (m * 3.3) + (soc * 3.4) + (f * 3.4));
   };
   const handleAddScore = () => {
     if (!userId) return;
@@ -54,12 +59,6 @@ export function ProgressPage() {
   const handlePrint = () => {
     window.print();
   };
-  const subjectKeys = [
-    { label: 'Türkçe', key: 'turkce' as const },
-    { label: 'Matematik', key: 'matematik' as const },
-    { label: 'Sosyal', key: 'sosyal' as const },
-    { label: 'Fen', key: 'fen' as const }
-  ];
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="flex items-center justify-between no-print">
@@ -79,7 +78,7 @@ export function ProgressPage() {
                 <h2 className="text-2xl font-black">Netlerini Gir</h2>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4 py-4">
-                {subjectKeys.map(({ label, key }) => (
+                {SUBJECT_KEYS.map(({ label, key }) => (
                   <div key={key} className="space-y-1">
                     <label className="font-bold text-sm">{label}</label>
                     <Input
@@ -105,7 +104,7 @@ export function ProgressPage() {
         </TabsList>
         <TabsContent value="stats" className="space-y-8 print-section">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {subjectKeys.map(({ label, key }) => (
+            {SUBJECT_KEYS.map(({ label, key }) => (
               <PlayfulCard key={key} className="text-center py-4 border-playful-dark shadow-playful">
                 <p className="text-[10px] font-black uppercase text-muted-foreground">{label}</p>
                 <p className="text-3xl font-black">{latestScore[key] || 0}</p>
@@ -121,13 +120,13 @@ export function ProgressPage() {
                    <XAxis dataKey="formattedDate" />
                    <YAxis domain={[0, 120]} />
                    <Tooltip contentStyle={{ borderRadius: '12px', border: '4px solid #1e293b' }} />
-                   <Line 
-                    type="monotone" 
-                    dataKey="totalNet" 
-                    stroke="#4ECDC4" 
-                    strokeWidth={8} 
+                   <Line
+                    type="monotone"
+                    dataKey="totalNet"
+                    stroke="#4ECDC4"
+                    strokeWidth={8}
                     strokeLinecap="round"
-                    dot={{ r: 10, fill: '#1e293b', strokeWidth: 4, stroke: '#fff' }} 
+                    dot={{ r: 10, fill: '#1e293b', strokeWidth: 4, stroke: '#fff' }}
                    />
                  </LineChart>
                </ResponsiveContainer>
