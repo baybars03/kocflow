@@ -22,10 +22,10 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
   body {
-    @apply bg-playful-bg text-playful-dark;
+    @apply bg-playful-bg text-playful-dark font-sans;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
@@ -34,32 +34,53 @@
     @apply bg-white border-4 border-playful-dark rounded-playful shadow-playful transition-all duration-200 hover:-translate-y-1 hover:shadow-playful-hover;
   }
   .playful-button {
-    @apply playful-card active:translate-y-0.5 active:shadow-playful-active px-6 py-3 font-bold text-lg inline-flex items-center justify-center gap-2;
+    @apply playful-card active:translate-y-0.5 active:shadow-playful-active px-6 py-3 font-black text-lg inline-flex items-center justify-center gap-2 uppercase tracking-tight;
   }
   .playful-input {
-    @apply bg-white border-4 border-playful-dark rounded-xl px-4 py-2 focus:outline-none focus:ring-0 placeholder:text-muted-foreground;
+    @apply bg-white border-4 border-playful-dark rounded-xl px-4 py-2 focus:outline-none focus:ring-0 placeholder:text-slate-300 font-bold;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 @media print {
-  .no-print {
-    display: none !important;
-  }
-  nav {
-    display: none !important;
-  }
-  .fixed {
+  .no-print, nav, footer, button, .fixed, .no-print-section {
     display: none !important;
   }
   body {
     background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .max-w-7xl, .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .playful-card {
     box-shadow: none !important;
     border: 2px solid black !important;
     break-inside: avoid;
-    margin-bottom: 20px;
+    margin-bottom: 2rem !important;
+    border-radius: 1rem !important;
   }
   .print-section {
     display: block !important;
+    width: 100% !important;
+  }
+  h1, h2, h3 {
+    color: black !important;
+    text-transform: uppercase !important;
+  }
+  .bg-playful-bg {
+    background-color: white !important;
+  }
+  main {
+    padding: 2rem !important;
   }
 }

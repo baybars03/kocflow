@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { Timer, Trophy, ArrowRight, Loader2, Sparkles, Rocket } from 'lucide-react';
+import { Timer, Trophy, ArrowRight, Loader2, Sparkles, Rocket, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
@@ -25,23 +25,26 @@ export function QuizPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [finalScore, setFinalScore] = useState<QuizResult | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isFinalizing = useRef(false);
   const userId = useAuth(s => s.user?.id);
   const navigate = useNavigate();
   const handleSubmit = useCallback(async (finalAnswers: number[]) => {
-    // Stop multiple submissions
-    if (isSubmitting || step === 'results') return;
+    if (isFinalizing.current) return;
+    isFinalizing.current = true;
+    // Clear timer immediately
+    if (timerRef.current) clearInterval(timerRef.current);
     setIsSubmitting(true);
     let correctCount = 0;
     MOCK_QUESTIONS.forEach((q, i) => {
       if (finalAnswers[i] === q.correct) correctCount++;
     });
-    // Use current time to calculate spent time reliably
     const timeSpent = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
       : INITIAL_TIME - timeLeft;
     const results: QuizResult = {
       score: Math.floor((correctCount / MOCK_QUESTIONS.length) * 100),
-      nets: correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25,
+      nets: Math.max(0, correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25),
       correctCount,
       totalQuestions: MOCK_QUESTIONS.length,
       timeSpent: Math.min(timeSpent, INITIAL_TIME),
@@ -55,33 +58,32 @@ export function QuizPage() {
         });
         toast.success("Netlerin başarıyla kaydedildi! ✨");
       } catch (e) {
-        console.error("Save failed", e);
+        console.error("Quiz save failed", e);
       }
     }
     setFinalScore(results);
     setStep('results');
     setIsSubmitting(false);
     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-  }, [isSubmitting, step, timeLeft, userId]);
+  }, [userId, timeLeft]);
   useEffect(() => {
-    if (step === 'active' && !startTimeRef.current) {
+    if (step === 'active') {
       startTimeRef.current = Date.now();
-    }
-  }, [step]);
-  useEffect(() => {
-    let timer: any;
-    if (step === 'active' && timeLeft > 0 && !isSubmitting) {
-      timer = setInterval(() => {
-        setTimeLeft(t => Math.max(0, t - 1));
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            handleSubmit(answers);
+            return 0;
+          }
+          return t - 1;
+        });
       }, 1000);
     }
-    return () => clearInterval(timer);
-  }, [step, timeLeft, isSubmitting]);
-  useEffect(() => {
-    if (timeLeft === 0 && step === 'active' && !isSubmitting) {
-      handleSubmit(answers);
-    }
-  }, [timeLeft, step, answers, handleSubmit, isSubmitting]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [step, answers, handleSubmit]);
   const handleAnswer = (idx: number) => {
     const newAnswers = [...answers];
     newAnswers[currentIdx] = idx;
@@ -101,12 +103,12 @@ export function QuizPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
-        <p className="font-black text-2xl animate-pulse text-playful-dark">Sonuçların Hesaplanıyor...</p>
+        <p className="font-black text-2xl animate-pulse text-playful-dark italic">Sonuçların Hesaplanıyor...</p>
       </div>
     );
   }
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 min-h-[60vh] flex flex-col justify-center">
+    <div className="max-w-4xl mx-auto px-4 py-12 min-h-[60vh] flex flex-col justify-center font-sans">
       <AnimatePresence mode="wait">
         {step === 'intro' && (
           <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}>
@@ -115,22 +117,22 @@ export function QuizPage() {
                 <Rocket className="w-12 h-12 text-playful-teal" strokeWidth={3} />
               </div>
               <div className="space-y-4">
-                <h1 className="text-5xl font-black uppercase tracking-tight">Mini Deneme #24</h1>
-                <p className="text-xl font-bold opacity-80">5 Soru | 5 Dakika | Hızlı Net Hesabı</p>
+                <h1 className="text-5xl font-black uppercase tracking-tight">Hızlı Deneme #24</h1>
+                <p className="text-xl font-bold opacity-80">5 Soru | 5 Dakika | Odaklanma Testi</p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-playful-dark font-black">
-                <div className="bg-white p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active text-sm md:text-base">
+                <div className="bg-white p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active">
                   +250 XP Kazan
                 </div>
-                <div className="bg-playful-yellow p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active text-sm md:text-base">
-                  Sürpriz Badge
+                <div className="bg-playful-yellow p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active">
+                  Hızlı Net Analizi
                 </div>
               </div>
               <button
                 onClick={() => setStep('active')}
                 className="playful-button bg-playful-red text-white text-2xl w-full py-6 group"
               >
-                Savaşa Başla! <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
+                Başla! <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform ml-2" />
               </button>
             </PlayfulCard>
           </motion.div>
@@ -138,18 +140,21 @@ export function QuizPage() {
         {step === 'active' && (
           <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
             <div className="flex justify-between items-center bg-white border-4 border-playful-dark p-4 rounded-2xl shadow-playful">
-              <div className="flex items-center gap-2 font-black">
+              <div className="flex items-center gap-2 font-black text-lg">
                 <Timer className={cn("text-playful-red", timeLeft < 30 && "animate-pulse")} /> {formatTime(timeLeft)}
               </div>
               <div className="flex gap-2">
                 {MOCK_QUESTIONS.map((_, i) => (
-                  <div key={i} className={`w-3 h-3 rounded-full border-2 border-playful-dark ${i === currentIdx ? 'bg-playful-yellow' : i < answers.length ? 'bg-playful-teal' : 'bg-slate-100'}`} />
+                  <div key={i} className={cn(
+                    "w-3 h-3 rounded-full border-2 border-playful-dark transition-colors",
+                    i === currentIdx ? 'bg-playful-yellow' : i < answers.length ? 'bg-playful-teal' : 'bg-slate-100'
+                  )} />
                 ))}
               </div>
             </div>
             <PlayfulCard className="bg-white p-10 min-h-[400px] flex flex-col justify-between border-playful-dark shadow-playful">
               <div className="space-y-6">
-                <span className="bg-playful-teal/10 text-playful-teal border-2 border-playful-teal px-3 py-1 rounded-full font-black text-[10px] md:text-xs uppercase">
+                <span className="bg-playful-teal/10 text-playful-teal border-2 border-playful-teal px-3 py-1 rounded-full font-black text-xs uppercase">
                   {MOCK_QUESTIONS[currentIdx].subject}
                 </span>
                 <h2 className="text-2xl md:text-3xl font-black leading-tight text-playful-dark">
@@ -161,7 +166,7 @@ export function QuizPage() {
                   <button
                     key={i}
                     onClick={() => handleAnswer(i)}
-                    className="p-6 border-4 border-playful-dark rounded-2xl font-black text-lg text-left hover:bg-playful-yellow transition-all hover:-translate-y-1 shadow-playful-active active:translate-y-0"
+                    className="p-6 border-4 border-playful-dark rounded-2xl font-black text-lg text-left hover:bg-playful-yellow transition-all hover:-translate-y-1 shadow-playful-active"
                   >
                     <span className="inline-block w-8 h-8 bg-slate-100 border-2 border-playful-dark rounded-lg text-center leading-7 mr-4">
                       {String.fromCharCode(65 + i)}
@@ -178,14 +183,14 @@ export function QuizPage() {
             <PlayfulCard className="bg-playful-yellow p-12 text-center space-y-8 border-playful-dark shadow-playful">
               <div className="space-y-2">
                 <Trophy className="w-20 h-20 text-playful-red mx-auto drop-shadow-lg" strokeWidth={3} />
-                <h2 className="text-5xl font-black uppercase">Harika İş! 🏆</h2>
-                <p className="font-bold text-xl opacity-70">Denemeyi başarıyla tamamladın.</p>
+                <h2 className="text-5xl font-black uppercase tracking-tighter">MÜKEMMEL! 🏆</h2>
+                <p className="font-bold text-xl opacity-70">Deneme başarıyla tamamlandı.</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: 'Doğru', val: finalScore.correctCount, color: 'bg-playful-teal text-white' },
                   { label: 'Net', val: finalScore.nets.toFixed(2), color: 'bg-white text-playful-dark' },
-                  { label: 'Kazanılan XP', val: `+${finalScore.xpEarned}`, color: 'bg-playful-red text-white' },
+                  { label: 'XP', val: `+${finalScore.xpEarned}`, color: 'bg-playful-red text-white' },
                   { label: 'Süre', val: `${Math.floor(finalScore.timeSpent / 60)}dk`, color: 'bg-playful-dark text-white' },
                 ].map((stat, i) => (
                   <div key={i} className={`${stat.color} p-4 rounded-2xl border-4 border-playful-dark shadow-playful-active flex flex-col items-center`}>
@@ -194,24 +199,17 @@ export function QuizPage() {
                   </div>
                 ))}
               </div>
-              {!userId ? (
-                <div className="bg-white p-8 rounded-3xl border-4 border-playful-dark space-y-6">
-                   <div className="flex items-center justify-center gap-2 font-black text-xl text-playful-dark">
-                      <Sparkles className="text-playful-red" />
-                      Puanlarını ve Gelişimini Kaydet!
-                   </div>
-                   <Link to="/signup" className="playful-button bg-playful-red text-white w-full py-6 text-2xl">
-                     Hemen Ücretsiz Katıl!
-                   </Link>
-                </div>
-              ) : (
+              <div className="flex flex-col gap-4 pt-4">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="playful-button bg-playful-dark text-white w-full py-6"
+                  className="playful-button bg-playful-dark text-white w-full py-6 text-xl"
                 >
-                  Dashboard'a Dön
+                  <Home className="w-6 h-6 mr-2" /> Paneline Dön
                 </button>
-              )}
+                <Link to="/progress" className="font-black text-playful-dark/60 hover:text-playful-dark underline">
+                  Tüm Analizlerini Gör
+                </Link>
+              </div>
             </PlayfulCard>
           </motion.div>
         )}
