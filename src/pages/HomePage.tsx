@@ -28,7 +28,7 @@ export function HomePage() {
     if (userRole === 'koç') navigate('/coach');
     else if (userRole === 'admin') navigate('/admin');
   }, [userRole, navigate]);
-  const handlers = useSwipeable({
+  const swipeHandlers = useSwipeable({
     onSwipedLeft: () => userRole === 'öğrenci' && navigate('/tasks'),
     preventScrollOnSwipe: true,
     trackMouse: true
@@ -39,46 +39,57 @@ export function HomePage() {
   const handleAddRec = (subject: TYTSubject, topic: string) => {
     if (!userId) return;
     createTask.mutate({ userId, subject, topic, done: false }, {
-      onSuccess: () => toast.success(`${topic} görevin eklendi! ✨`)
+      onSuccess: () => toast.success(`${topic} görevin başarıyla eklendi! ✨`)
     });
   };
   if (userRole !== 'öğrenci') return <div className="flex items-center justify-center p-20"><Loader2 className="w-12 h-12 animate-spin text-playful-teal" /></div>;
   return (
-    <div {...handlers} className="space-y-8 animate-in fade-in duration-500 pb-20">
+    <div {...swipeHandlers} className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-12">
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between no-print">
         <div className="space-y-2 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl font-black text-playful-dark tracking-tight">Selam Şampiyon! 👋</h1>
-          <p className="text-lg font-bold text-muted-foreground italic">Bugün yeni bir rekor kırmaya ne dersin?</p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-playful-dark tracking-tighter">Selam Şampiyon! 👋</h1>
+          <p className="text-lg md:text-xl font-bold text-muted-foreground italic">Bugün yeni bir rekor kırmaya ne dersin?</p>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={() => window.print()} className="p-4 border-4 border-playful-dark rounded-xl bg-white shadow-playful hover:-translate-y-1 transition-all">
+          <button onClick={() => window.print()} className="p-4 border-4 border-playful-dark rounded-xl bg-white shadow-playful hover:-translate-y-1 active:translate-y-0 active:shadow-playful-active transition-all">
             <FileDown className="w-6 h-6" />
           </button>
-          <PlayfulCard className={cn("flex flex-col items-center py-4 px-8 border-playful-dark shadow-playful min-w-[140px]", examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white")}>
+          <PlayfulCard className={cn(
+            "flex flex-col items-center py-4 px-8 border-playful-dark shadow-playful min-w-[140px]", 
+            examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white"
+          )}>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">TYT Maratonu</span>
-            <span className="text-4xl font-black leading-none my-1">{remainingDays > 0 ? remainingDays : 0}</span>
+            <span className="text-4xl lg:text-5xl font-black leading-none my-1">{remainingDays > 0 ? remainingDays : 0}</span>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">GÜN KALDI</span>
           </PlayfulCard>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-8">
           <div className="space-y-4 no-print">
              <h2 className="text-2xl font-black flex items-center gap-2 px-2">
                <Sparkles className="w-6 h-6 text-playful-yellow fill-current" /> Sana Özel Öneriler
              </h2>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               {recsLoading ? <div className="col-span-2 flex justify-center py-10"><Loader2 className="animate-spin text-playful-teal" /></div> :
-                recommendations?.map((rec, i) => (
-                  <PlayfulCard key={i} className="bg-white border-4 border-playful-dark group overflow-hidden">
-                    <span className={cn("text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-playful-dark", SUBJECT_COLORS[rec.subject])}>{rec.subject}</span>
-                    <h3 className="text-xl font-black my-2">{rec.topic}</h3>
-                    <p className="text-xs font-bold text-muted-foreground mb-4 leading-tight">{rec.reason}</p>
+               {recsLoading ? (
+                 <div className="col-span-full flex justify-center py-12"><Loader2 className="animate-spin text-playful-teal w-8 h-8" /></div>
+               ) : recommendations?.slice(0, 4).map((rec, i) => (
+                  <PlayfulCard key={i} className="bg-white border-4 border-playful-dark group overflow-hidden flex flex-col justify-between">
+                    <div>
+                      <span className={cn(
+                        "text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-playful-dark", 
+                        SUBJECT_COLORS[rec.subject] || "bg-slate-200"
+                      )}>
+                        {rec.subject}
+                      </span>
+                      <h3 className="text-xl font-black my-2 group-hover:text-playful-red transition-colors">{rec.topic}</h3>
+                      <p className="text-xs font-bold text-muted-foreground mb-4 leading-tight">{rec.reason}</p>
+                    </div>
                     <button
                       onClick={() => handleAddRec(rec.subject, rec.topic)}
-                      className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] transition-all"
+                      className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2.5 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] active:translate-y-0 active:shadow-none transition-all"
                     >
-                      <Plus className="w-4 h-4" /> Hedefe Ekle
+                      <Plus className="w-4 h-4" strokeWidth={4} /> Hedefe Ekle
                     </button>
                   </PlayfulCard>
                 ))
@@ -86,38 +97,63 @@ export function HomePage() {
              </div>
           </div>
           <PlayfulCard className="bg-white border-playful-dark shadow-playful print-section">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
               <div className="flex items-center gap-4">
-                <div className="p-4 bg-playful-dark text-white rounded-2xl">
+                <div className="p-4 bg-playful-dark text-white rounded-2xl shadow-playful-active">
                   <Zap className="w-7 h-7 fill-current" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight">Seviye Gelişimi</h3>
+                  <h3 className="text-2xl font-black tracking-tight leading-none mb-1">Seviye Gelişimi</h3>
                   <p className="text-sm font-bold text-muted-foreground">{stats?.pomodoroSessions || 0} Odaklanma Seansı</p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right w-full sm:w-auto">
                 <div className="text-3xl font-black text-playful-dark">{stats?.level || 1}. Seviye</div>
-                <div className="flex items-center justify-end gap-1.5 text-playful-red font-black text-lg">
-                  <Flame className="w-5 h-5 fill-current" /> {stats?.streakDays || 0} GÜN
+                <div className="flex items-center sm:justify-end gap-1.5 text-playful-red font-black text-lg">
+                  <Flame className="w-5 h-5 fill-current" /> {stats?.streakDays || 0} GÜN STREAK
                 </div>
               </div>
             </div>
-            <LevelProgress value={stats?.progressToNextLevel || 0} label={`${stats?.points || 0} TOPLAM PUAN`} />
+            <LevelProgress 
+              value={stats?.progressToNextLevel || 0} 
+              label={`${stats?.points || 0} TOPLAM PUAN`} 
+            />
           </PlayfulCard>
         </div>
-        <div className="space-y-6">
-          <PlayfulCard className="bg-playful-yellow text-playful-dark flex flex-col items-center justify-center p-8 border-playful-dark shadow-playful print-section">
+        <div className="lg:col-span-4 space-y-6">
+          <PlayfulCard className="bg-playful-yellow text-playful-dark flex flex-col items-center justify-center py-10 md:py-14 border-playful-dark shadow-playful print-section">
             <TrendingUp className="w-14 h-14 mb-4" strokeWidth={3} />
             <span className="text-xs font-black uppercase tracking-widest opacity-80">Genel Net Ortalaması</span>
             <span className="text-6xl font-black my-2 tracking-tighter">{avgNet}</span>
+            <div className="text-[10px] font-black uppercase px-3 py-1 bg-white/30 border border-playful-dark/10 rounded-full">
+              {scores?.length || 0} Deneme Baz Alındı
+            </div>
           </PlayfulCard>
           <PlayfulCard className="bg-white border-playful-dark shadow-playful p-6 no-print">
              <div className="flex items-center gap-3 mb-3">
                <Star className="w-6 h-6 text-playful-red fill-current" />
                <p className="font-black text-sm uppercase tracking-widest">Günün Motivasyonu</p>
              </div>
-             <p className="font-bold text-lg leading-relaxed">"{MOCK_QUOTE}"</p>
+             <p className="font-bold text-lg leading-relaxed italic">"{MOCK_QUOTE}"</p>
+          </PlayfulCard>
+          <PlayfulCard className="bg-playful-dark text-white p-6 border-playful-dark shadow-playful hidden lg:block">
+            <h4 className="font-black text-xl mb-2">Hızlı Erişim 🚀</h4>
+            <div className="space-y-3">
+              <button 
+                onClick={() => navigate('/tasks')} 
+                className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
+              >
+                <span className="font-bold">Görevlerim</span>
+                <Plus className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => navigate('/progress')} 
+                className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
+              >
+                <span className="font-bold">Başarı Takibi</span>
+                <TrendingUp className="w-4 h-4" />
+              </button>
+            </div>
           </PlayfulCard>
         </div>
       </div>

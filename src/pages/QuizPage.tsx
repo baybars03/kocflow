@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Timer, Trophy, ArrowRight, Loader2, Sparkles, Rocket } from 'lucide-react';
@@ -15,30 +15,34 @@ const MOCK_QUESTIONS = [
   { id: '4', subject: 'Türkçe', text: '"Sessiz harf türemesi" hangisinde vardır?', options: ["Geliyor", "Hakkımız", "Gidiyor", "Bilgi"], correct: 1 },
   { id: '5', subject: 'Matematik', text: "30 sayısının %40'ı kaçtır?", options: ["10", "12", "14", "15"], correct: 1 },
 ];
+const INITIAL_TIME = 300; // 5 mins
 export function QuizPage() {
   const [step, setStep] = useState<'intro' | 'active' | 'results'>('intro');
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 mins
+  const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [finalScore, setFinalScore] = useState<QuizResult | null>(null);
+  const startTimeRef = useRef<number | null>(null);
   const userId = useAuth(s => s.user?.id);
   const navigate = useNavigate();
   const handleSubmit = useCallback(async (finalAnswers: number[]) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     let correctCount = 0;
-    // Use finalAnswers passed directly to avoid stale 'answers' state
     finalAnswers.forEach((ans, i) => {
       if (ans === MOCK_QUESTIONS[i].correct) correctCount++;
     });
+    const timeSpent = startTimeRef.current 
+      ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+      : INITIAL_TIME - timeLeft;
     const results: QuizResult = {
       score: Math.floor((correctCount / MOCK_QUESTIONS.length) * 100),
       nets: correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25,
       correctCount,
       totalQuestions: MOCK_QUESTIONS.length,
-      timeSpent: 300 - timeLeft,
-      xpEarned: correctCount * 50 + 100 // +100 bonus
+      timeSpent: Math.min(timeSpent, INITIAL_TIME),
+      xpEarned: correctCount * 50 + 100
     };
     if (userId) {
       try {
@@ -57,15 +61,30 @@ export function QuizPage() {
     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
   }, [isSubmitting, timeLeft, userId]);
   useEffect(() => {
+    if (step === 'active' && !startTimeRef.current) {
+      startTimeRef.current = Date.now();
+    }
+  }, [step]);
+  useEffect(() => {
     let timer: any;
     if (step === 'active' && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    } else if (timeLeft === 0 && step === 'active') {
-      // Fallback submission if time runs out
-      handleSubmit(answers);
+      timer = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
     }
     return () => clearInterval(timer);
-  }, [step, timeLeft, handleSubmit, answers]);
+  }, [step]); // Only step in dependency to avoid re-creating on every tick
+  useEffect(() => {
+    if (timeLeft === 0 && step === 'active' && !isSubmitting) {
+      handleSubmit(answers);
+    }
+  }, [timeLeft, step, answers, handleSubmit, isSubmitting]);
   const handleAnswer = (idx: number) => {
     const newAnswers = [...answers];
     newAnswers[currentIdx] = idx;
@@ -73,7 +92,6 @@ export function QuizPage() {
     if (currentIdx < MOCK_QUESTIONS.length - 1) {
       setCurrentIdx(currentIdx + 1);
     } else {
-      // Pass the actual newest array to handleSubmit to bypass async state update lag
       handleSubmit(newAnswers);
     }
   };
@@ -124,7 +142,7 @@ export function QuizPage() {
           <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
             <div className="flex justify-between items-center bg-white border-4 border-playful-dark p-4 rounded-2xl shadow-playful">
               <div className="flex items-center gap-2 font-black">
-                <Timer className="text-playful-red" /> {formatTime(timeLeft)}
+                <Timer className={cn("text-playful-red", timeLeft < 30 && "animate-pulse")} /> {formatTime(timeLeft)}
               </div>
               <div className="flex gap-2">
                 {MOCK_QUESTIONS.map((_, i) => (

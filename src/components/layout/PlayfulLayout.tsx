@@ -27,26 +27,26 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
   const getNavItems = () => {
     if (!isLoggedIn) {
       return [
-        { label: 'Marketplace', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-teal' },
+        { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
       ];
     }
     if (userRole === 'öğrenci') {
       return [
-        { label: 'Kampüs', path: '/dashboard', icon: Home, color: 'hover:bg-playful-teal' },
-        { label: 'Marketplace', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red' },
-        { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red' },
-        { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow' },
+        { label: 'Kampüs', path: '/dashboard', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
+        { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
+        { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
+        { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow', activeColor: 'bg-playful-yellow text-playful-dark' },
       ];
     }
     if (userRole === 'koç') {
       return [
-        { label: 'Panel', path: '/coach', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Panel', path: '/coach', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
       ];
     }
     if (userRole === 'admin') {
       return [
-        { label: 'Panel', path: '/admin', icon: Home, color: 'hover:bg-playful-teal' },
-        { label: 'Yönetim', path: '/admin', icon: Settings, color: 'hover:bg-playful-yellow' },
+        { label: 'Panel', path: '/admin', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
+        { label: 'Yönetim', path: '/admin', icon: Settings, color: 'hover:bg-playful-yellow', activeColor: 'bg-playful-yellow text-playful-dark' },
       ];
     }
     return [];
@@ -62,7 +62,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
   };
   const navItems = getNavItems();
   return (
-    <div className="min-h-screen bg-playful-bg">
+    <div className="min-h-screen bg-playful-bg flex flex-col">
       <nav className="sticky top-0 z-50 bg-white border-b-4 border-playful-dark px-4 py-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -115,10 +115,10 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
             {!isLoggedIn ? (
               <div className="flex gap-2">
                 <Link to="/login" className="px-4 py-2 border-2 border-playful-dark rounded-xl font-black hover:bg-slate-50 transition-colors flex items-center gap-2">
-                  <LogIn className="w-4 h-4" /> Giriş
+                  <LogIn className="w-4 h-4" /> <span className="hidden sm:inline">Giriş</span>
                 </Link>
                 <Link to="/signup" className="px-4 py-2 bg-playful-teal text-white border-2 border-playful-dark rounded-xl font-black shadow-playful hover:-translate-y-1 transition-all flex items-center gap-2">
-                  <UserPlus className="w-4 h-4" /> Kaydol
+                  <UserPlus className="w-4 h-4" /> <span className="hidden sm:inline">Kaydol</span>
                 </Link>
               </div>
             ) : (
@@ -133,9 +133,36 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 pb-24 md:pb-12">
         {children}
       </main>
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-playful-dark z-50 px-2 py-2 flex justify-around items-center">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={cn(
+              "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200",
+              location.pathname === item.path
+                ? cn("border-2 border-playful-dark shadow-playful-active", item.activeColor || "bg-playful-dark text-white")
+                : "text-playful-dark/60"
+            )}
+          >
+            <item.icon className="w-6 h-6" strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-tighter">{item.label}</span>
+          </Link>
+        ))}
+        {isLoggedIn && (
+          <button
+            onClick={handleLogout}
+            className="flex flex-col items-center gap-1 p-2 rounded-xl text-playful-red/60"
+          >
+            <LogOut className="w-6 h-6" strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-tighter">Çıkış</span>
+          </button>
+        )}
+      </nav>
     </div>
   );
 }

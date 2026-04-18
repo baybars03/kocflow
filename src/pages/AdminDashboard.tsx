@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { ShieldCheck, Users, Mail, UserPlus, Loader2, Activity, Trash2, Crown, UserCircle2, FileDown } from 'lucide-react';
+import { ShieldCheck, Users, Mail, UserPlus, Loader2, Activity, Trash2, Crown, UserCircle2, FileDown, Shield } from 'lucide-react';
 import type { User as UserType } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -36,17 +36,12 @@ export function AdminDashboard() {
   const handleRoleToggle = (user: UserType) => {
     const nextRole = user.role === 'öğrenci' ? 'koç' : 'öğrenci';
     updateUser.mutate({ id: user.id, role: nextRole }, {
-      onSuccess: () => toast.success("Rol güncellendi!")
-    });
-  };
-  const handlePremiumToggle = (user: UserType) => {
-    updateUser.mutate({ id: user.id, isPremium: !user.isPremium }, {
-      onSuccess: () => toast.success(user.isPremium ? "Premium iptal edildi" : "Premium yetkisi verildi! 💎")
+      onSuccess: () => toast.success(`Kullanıcı rolü ${nextRole} olarak güncellendi!`)
     });
   };
   const handleDelete = (id: string) => {
     deleteUser.mutate(id, {
-      onSuccess: () => toast.error("Kullanıcı silindi.")
+      onSuccess: () => toast.error("Kullanıcı sistemden başarıyla silindi.")
     });
   };
   const handleExport = () => {
@@ -144,8 +139,16 @@ export function AdminDashboard() {
                   <tr key={user.id} className="border-b-2 border-slate-100 hover:bg-playful-teal/5 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-xl border-2 border-playful-dark flex items-center justify-center font-black", user.isPremium ? "bg-playful-yellow" : "bg-slate-100")}>
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl border-2 border-playful-dark flex items-center justify-center font-black relative overflow-hidden",
+                          user.isPremium ? "bg-playful-yellow" : "bg-slate-100"
+                        )}>
                           {user.email.charAt(0).toUpperCase()}
+                          {user.role === 'admin' && (
+                            <div className="absolute top-0 right-0 p-0.5 bg-playful-dark">
+                              <Shield className="w-2 h-2 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="font-bold leading-none">{user.email}</p>
@@ -154,43 +157,51 @@ export function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleRoleToggle(user)}
-                        disabled={true} /* Disabled role toggle in display-only areas */
-                        className={cn(
-                          "px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark transition-all",
-                          user.role === 'öğrenci' ? "bg-playful-teal text-white" : "bg-playful-red text-white"
-                        )}
-                      >
-                        {user.role}
-                      </button>
+                      {user.role === 'admin' ? (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark bg-playful-dark text-white">
+                          ADMIN
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleRoleToggle(user)}
+                          disabled={updateUser.isPending}
+                          className={cn(
+                            "px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark transition-all hover:scale-105 active:scale-95",
+                            user.role === 'öğrenci' ? "bg-playful-teal text-white" : "bg-playful-red text-white"
+                          )}
+                        >
+                          {user.role}
+                        </button>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className={cn(
                         "inline-block p-2 rounded-lg border-2 border-playful-dark transition-all",
-                        user.isPremium ? "bg-playful-yellow" : "bg-white text-slate-300"
+                        user.isPremium ? "bg-playful-yellow shadow-playful-active" : "bg-white text-slate-200 border-slate-200"
                       )}>
-                        <Crown className="w-5 h-5 fill-current" />
+                        <Crown className={cn("w-5 h-5", user.isPremium && "fill-current")} />
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right no-print">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                           <button className="p-2 text-playful-red hover:bg-playful-red hover:text-white rounded-lg transition-all">
-                             <Trash2 className="w-5 h-5" />
-                           </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="border-4 border-playful-dark rounded-[2rem]">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle className="text-2xl font-black">Kullanıcıyı Sil?</AlertDialogTitle>
-                            <AlertDialogDescription className="font-bold">Bu işlem geri alınamaz. Kullanıcının tüm verileri silinecektir.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel className="playful-button bg-white text-playful-dark">İptal</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(user.id)} className="playful-button bg-playful-red text-white">Evet, Sil</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      {user.role !== 'admin' && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                             <button className="p-2 text-playful-red hover:bg-playful-red hover:text-white rounded-lg transition-all">
+                               <Trash2 className="w-5 h-5" />
+                             </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="border-4 border-playful-dark rounded-[2rem]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-2xl font-black">Kullanıcıyı Sil?</AlertDialogTitle>
+                              <AlertDialogDescription className="font-bold">Bu işlem geri alınamaz. Kullanıcının tüm verileri kalıcı olarak silinecektir.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="playful-button bg-white text-playful-dark">İptal</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(user.id)} className="playful-button bg-playful-red text-white">Evet, Sil</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </td>
                   </tr>
                 ))}
