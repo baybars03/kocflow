@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Calendar, Star, Zap, ChevronRight, Loader2, Flame, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, Star, Zap, ChevronRight, Loader2, Flame, TrendingUp, Info, X } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
 import { Link, useNavigate } from 'react-router-dom';
@@ -12,6 +12,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
+  const [showGuide, setShowGuide] = useState(true);
   const targetDate = new Date('2025-06-14');
   const remainingDays = differenceInDays(targetDate, new Date());
   const { data: tasks, isLoading: tasksLoading } = useTasks(userId);
@@ -37,6 +38,36 @@ export function HomePage() {
   }
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {showGuide && (
+        <PlayfulCard className="bg-playful-dark text-white p-4 md:p-6 relative">
+          <button 
+            onClick={() => setShowGuide(false)}
+            className="absolute top-4 right-4 p-1 hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-playful-yellow p-2 rounded-xl border-2 border-white rotate-6">
+              <Info className="text-playful-dark w-6 h-6" strokeWidth={3} />
+            </div>
+            <h2 className="text-xl font-black">Kampüs Rehberi</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+              <p className="font-black text-playful-teal mb-1 text-sm uppercase">Kampüs</p>
+              <p className="text-sm font-medium opacity-80">Günün özeti, seviyen ve sınav geri sayımını takip et.</p>
+            </div>
+            <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+              <p className="font-black text-playful-red mb-1 text-sm uppercase">Görevler</p>
+              <p className="text-sm font-medium opacity-80">Çalışacağın konuları listele ve bitirdikçe puan topla.</p>
+            </div>
+            <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+              <p className="font-black text-playful-yellow mb-1 text-sm uppercase">Netlerim</p>
+              <p className="text-sm font-medium opacity-80">Deneme sonuçlarını gir ve gelişim grafiğini izle.</p>
+            </div>
+          </div>
+        </PlayfulCard>
+      )}
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="space-y-2 text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-black text-playful-dark">

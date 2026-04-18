@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { UserPlus, Loader2, GraduationCap, Users, ShieldCheck } from 'lucide-react';
+import { UserPlus, Loader2, GraduationCap, Users, ShieldCheck, ArrowRight } from 'lucide-react';
 import type { UserRole } from '@shared/types';
 import { cn } from '@/lib/utils';
 export function SignupPage() {
@@ -34,71 +34,90 @@ export function SignupPage() {
     { id: 'admin' as UserRole, label: 'Admin', icon: ShieldCheck, color: 'bg-playful-yellow' },
   ];
   return (
-    <div className="min-h-screen flex items-center justify-center bg-playful-teal p-4">
-      <PlayfulCard className="w-full max-w-2xl bg-white">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-playful-dark">Kampüse Katıl! 🎓</h1>
-          <p className="font-bold text-muted-foreground">Yeni bir hesap oluştur ve hedeflerine koş.</p>
-        </div>
-        <form onSubmit={handleSignup} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {roles.map((r) => (
-              <div
-                key={r.id}
-                onClick={() => setRole(r.id)}
-                className={cn(
-                  "cursor-pointer border-4 border-playful-dark rounded-2xl p-4 transition-all flex flex-col items-center gap-2",
-                  role === r.id ? cn(r.color, "shadow-none translate-y-1") : "bg-white shadow-playful hover:-translate-y-1"
-                )}
-              >
-                <r.icon className="w-8 h-8" />
-                <span className="font-black">{r.label}</span>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-teal p-4 py-12">
+      <div className="w-full max-w-2xl space-y-8">
+        <PlayfulCard className="bg-white">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-black text-playful-dark">Kampüse Katıl! 🎓</h1>
+            <p className="font-bold text-muted-foreground">Yeni bir hesap oluştur ve hedeflerine koş.</p>
+          </div>
+          <form onSubmit={handleSignup} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {roles.map((r) => (
+                <div
+                  key={r.id}
+                  onClick={() => setRole(r.id)}
+                  className={cn(
+                    "cursor-pointer border-4 border-playful-dark rounded-2xl p-4 transition-all flex flex-col items-center gap-2",
+                    role === r.id ? cn(r.color, "shadow-none translate-y-1") : "bg-white shadow-playful hover:-translate-y-1"
+                  )}
+                >
+                  <r.icon className="w-8 h-8" strokeWidth={3} />
+                  <span className="font-black">{r.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="font-bold">E-posta Adresi</label>
+                <Input
+                  type="email"
+                  placeholder="merhaba@kampus.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="playful-input h-14"
+                  required
+                />
               </div>
-            ))}
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="font-bold">E-posta Adresi</label>
-              <Input
-                type="email"
-                placeholder="merhaba@kampus.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="playful-input h-14"
-                required
-              />
+              <div className="space-y-2">
+                <label className="font-bold">Şifre Belirle</label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  className="playful-input h-14"
+                  required
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="font-bold">Şifre Belirle</label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                className="playful-input h-14"
-                required
-              />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-playful-yellow text-playful-dark font-black text-xl py-8 border-4 border-playful-dark shadow-playful hover:translate-y-[-4px] hover:shadow-playful-hover transition-all active:translate-y-0"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : (
+                <>
+                  Kayıt Ol <UserPlus className="ml-2" />
+                </>
+              )}
+            </Button>
+          </form>
+          <div className="mt-8 text-center">
+            <p className="font-bold text-muted-foreground">
+              Zaten hesabın var mı?{' '}
+              <Link to="/login" className="text-playful-teal hover:underline">
+                Giriş Yap!
+              </Link>
+            </p>
+          </div>
+        </PlayfulCard>
+        <PlayfulCard className="bg-playful-dark text-white border-playful-dark flex items-center justify-between p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center border-2 border-white rotate-3">
+              <Users className="text-playful-dark w-6 h-6" strokeWidth={3} />
+            </div>
+            <div>
+              <h4 className="font-black text-lg leading-none">Test Etmek İster Misin?</h4>
+              <p className="text-sm font-medium text-white/70">Hazır hesaplarla hızlıca göz at.</p>
             </div>
           </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-playful-yellow text-playful-dark font-black text-xl py-8 border-4 border-playful-dark shadow-playful hover:translate-y-[-4px] hover:shadow-playful-hover transition-all active:translate-y-0"
+          <Link 
+            to="/login" 
+            className="flex items-center gap-2 bg-playful-yellow text-playful-dark px-4 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-1 transition-all"
           >
-            {loading ? <Loader2 className="animate-spin" /> : (
-              <>
-                Kayıt Ol <UserPlus className="ml-2" />
-              </>
-            )}
-          </Button>
-        </form>
-        <div className="mt-8 text-center">
-          <p className="font-bold text-muted-foreground">
-            Zaten hesabın var mı?{' '}
-            <Link to="/login" className="text-playful-teal hover:underline">
-              Giriş Yap!
-            </Link>
-          </p>
-        </div>
-      </PlayfulCard>
+            Demo <ArrowRight className="w-4 h-4" />
+          </Link>
+        </PlayfulCard>
+      </div>
     </div>
   );
 }

@@ -5,18 +5,19 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { LogIn, Loader2 } from 'lucide-react';
+import { LogIn, Loader2, User, Users, ShieldCheck } from 'lucide-react';
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const login = useAuth((s) => s.login);
   const navigate = useNavigate();
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
+  const handleSubmit = async (e?: React.FormEvent, directEmail?: string) => {
+    if (e) e.preventDefault();
+    const loginEmail = directEmail || email;
+    if (!loginEmail) return;
     setLoading(true);
     try {
-      await login({ email });
+      await login({ email: loginEmail });
       toast.success('Giriş yapıldı! Hoş geldin. 🚀');
       navigate('/');
     } catch (err) {
@@ -25,58 +26,96 @@ export function LoginPage() {
       setLoading(false);
     }
   };
+  const demoLogins = [
+    { role: 'Öğrenci', email: 'ogrenci1@kampus.com', icon: User, color: 'bg-playful-teal' },
+    { role: 'Koç', email: 'koc@kampus.com', icon: Users, color: 'bg-playful-red' },
+    { role: 'Admin', email: 'admin@kampus.com', icon: ShieldCheck, color: 'bg-playful-yellow' },
+  ];
   return (
-    <div className="min-h-screen flex items-center justify-center bg-playful-yellow p-4">
-      <PlayfulCard className="w-full max-w-md bg-white">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-playful-red border-4 border-playful-dark rounded-2xl text-white text-3xl font-black mb-4">
-            T
+    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-yellow p-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        <PlayfulCard className="bg-white">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-playful-red border-4 border-playful-dark rounded-2xl text-white text-3xl font-black mb-4 shadow-playful">
+              T
+            </div>
+            <h1 className="text-3xl font-black text-playful-dark">Tekrar Hoş Geldin!</h1>
+            <p className="font-bold text-muted-foreground">Kampüse giriş yap ve çalışmaya başla.</p>
           </div>
-          <h1 className="text-3xl font-black text-playful-dark">Tekrar Hoş Geldin!</h1>
-          <p className="font-bold text-muted-foreground">Kampüse giriş yap ve çalışmaya başla.</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="font-bold text-playful-dark">E-posta Adresi</label>
-            <Input
-              type="email"
-              placeholder="ogrenci@kampus.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="playful-input h-14"
-              required
-            />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="font-bold text-playful-dark">E-posta Adresi</label>
+              <Input
+                type="email"
+                placeholder="ogrenci@kampus.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="playful-input h-14"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="font-bold text-playful-dark">Şifre</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                className="playful-input h-14"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-playful-teal text-playful-dark font-black text-xl py-8 border-4 border-playful-dark shadow-playful hover:translate-y-[-4px] hover:shadow-playful-hover transition-all active:translate-y-0"
+            >
+              {loading ? <Loader2 className="animate-spin" /> : (
+                <>
+                  Giriş Yap <LogIn className="ml-2" />
+                </>
+              )}
+            </Button>
+          </form>
+          <div className="mt-8 text-center">
+            <p className="font-bold text-muted-foreground">
+              Hesabın yok mu?{' '}
+              <Link to="/signup" className="text-playful-red hover:underline">
+                Hemen Kaydol!
+              </Link>
+            </p>
           </div>
-          <div className="space-y-2">
-            <label className="font-bold text-playful-dark">Şifre</label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              className="playful-input h-14"
-              required
-            />
+        </PlayfulCard>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="h-1 flex-1 bg-playful-dark/10 rounded-full" />
+            <span className="font-black text-playful-dark/40 uppercase text-sm tracking-widest">Hızlı Erişim (Demo)</span>
+            <div className="h-1 flex-1 bg-playful-dark/10 rounded-full" />
           </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-playful-teal text-playful-dark font-black text-xl py-8 border-4 border-playful-dark shadow-playful hover:translate-y-[-4px] hover:shadow-playful-hover transition-all active:translate-y-0"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : (
-              <>
-                Giriş Yap <LogIn className="ml-2" />
-              </>
-            )}
-          </Button>
-        </form>
-        <div className="mt-8 text-center">
-          <p className="font-bold text-muted-foreground">
-            Hesabın yok mu?{' '}
-            <Link to="/signup" className="text-playful-red hover:underline">
-              Hemen Kaydol!
-            </Link>
+          <div className="grid grid-cols-1 gap-3">
+            {demoLogins.map((demo) => (
+              <button
+                key={demo.email}
+                onClick={() => handleSubmit(undefined, demo.email)}
+                disabled={loading}
+                className={`flex items-center justify-between p-4 border-4 border-playful-dark rounded-2xl bg-white shadow-playful hover:-translate-y-1 hover:shadow-playful-hover active:translate-y-0 active:shadow-playful-active transition-all group`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg border-2 border-playful-dark ${demo.color}`}>
+                    <demo.icon className="w-5 h-5 text-playful-dark" strokeWidth={3} />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-black text-playful-dark leading-none">{demo.role} Girişi</p>
+                    <p className="text-xs font-bold text-muted-foreground">{demo.email}</p>
+                  </div>
+                </div>
+                <LogIn className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))}
+          </div>
+          <p className="text-center text-xs font-bold text-playful-dark/50">
+            Demo için sadece e-posta gereklidir. Şifre: <span className="text-playful-dark">demo123</span>
           </p>
         </div>
-      </PlayfulCard>
+      </div>
     </div>
   );
 }
