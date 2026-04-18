@@ -15,7 +15,6 @@ import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 export function LandingPage() {
   const isHydrated = useAuth((s) => s.isHydrated);
-  // Using primitive selector to prevent loops and unnecessary re-renders
   const userId = useAuth((s) => s.user?.id);
   const isLoggedIn = !!userId;
   const { pathname } = useLocation();
@@ -23,16 +22,23 @@ export function LandingPage() {
   const [showPopup, setShowPopup] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Check for persisted preference
     const savedFunnel = localStorage.getItem('kocflow-funnel-pref') as 'öğrenci' | 'koç' | null;
     if (savedFunnel) {
       setActiveFunnel(savedFunnel);
-    } else if (isHydrated && !isLoggedIn && !activeFunnel) {
-      // Show popup for guests after a short delay if no preference exists
-      const timer = setTimeout(() => setShowPopup(true), 1000);
-      return () => clearTimeout(timer);
+    } else if (isHydrated && !isLoggedIn) {
+      // Force popup for guests who haven't chosen yet
+      setShowPopup(true);
     }
-  }, [pathname, isHydrated, isLoggedIn, activeFunnel]);
+  }, [pathname, isHydrated, isLoggedIn]);
+  // Lock body scroll when popup is active
+  useEffect(() => {
+    if (showPopup) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [showPopup]);
   const handleRoleSelect = (role: 'öğrenci' | 'koç') => {
     localStorage.setItem('kocflow-funnel-pref', role);
     setActiveFunnel(role);
@@ -54,7 +60,10 @@ export function LandingPage() {
         {showPopup && (
           <RoleSelectionPopup
             onSelect={handleRoleSelect}
-            onClose={() => setShowPopup(false)}
+            onClose={() => {
+              setShowPopup(false);
+              if (!activeFunnel) handleRoleSelect('öğrenci');
+            }}
           />
         )}
       </AnimatePresence>
@@ -63,14 +72,17 @@ export function LandingPage() {
         <StatsSection />
       </div>
       {activeFunnel === 'koç' ? (
-        <CoachTeaser />
+        <div className="space-y-16 md:space-y-24">
+          <CoachTeaser />
+          <PopularCoaches />
+        </div>
       ) : (
-        <>
-          {!isLoggedIn && <PracticeQuizPreview funnel={activeFunnel} />}
+        <div className="space-y-16 md:space-y-24">
+          <PracticeQuizPreview funnel={activeFunnel} />
           <AIKocFeature />
-        </>
+          <PopularCoaches />
+        </div>
       )}
-      <PopularCoaches />
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
           <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-playful-dark">Neden KocFlow? 🤔</h2>
