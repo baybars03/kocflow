@@ -22,7 +22,6 @@ export function LandingPage() {
   const [showPopup, setShowPopup] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
-    
     // Check for persisted preference
     const savedFunnel = localStorage.getItem('kocflow-funnel-pref') as 'öğrenci' | 'koç' | null;
     if (savedFunnel) {
@@ -32,7 +31,7 @@ export function LandingPage() {
       const timer = setTimeout(() => setShowPopup(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [pathname, isHydrated, isLoggedIn]);
+  }, [pathname, isHydrated, isLoggedIn, activeFunnel]);
   const handleRoleSelect = (role: 'öğrenci' | 'koç') => {
     localStorage.setItem('kocflow-funnel-pref', role);
     setActiveFunnel(role);
@@ -52,9 +51,9 @@ export function LandingPage() {
     <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden animate-in fade-in duration-700">
       <AnimatePresence>
         {showPopup && (
-          <RoleSelectionPopup 
-            onSelect={handleRoleSelect} 
-            onClose={() => setShowPopup(false)} 
+          <RoleSelectionPopup
+            onSelect={handleRoleSelect}
+            onClose={() => setShowPopup(false)}
           />
         )}
       </AnimatePresence>

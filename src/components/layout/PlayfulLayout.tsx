@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ClipboardList, TrendingUp, LogOut, HelpCircle, ShoppingBag, LogIn, UserPlus } from 'lucide-react';
+import { Home, ClipboardList, TrendingUp, LogOut, HelpCircle, ShoppingBag, LogIn, UserPlus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import {
-  User,
   Tooltip,
   TooltipContent,
   TooltipProvider,

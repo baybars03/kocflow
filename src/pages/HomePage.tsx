@@ -3,7 +3,7 @@ import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown, Messag
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS, TARGET_DATE } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
-import { useTasks, useStats, useScores, useRecommendations } from '@/hooks/use-tyt-api';
+import { useTasks, useStats, useScores, useRecommendations, useCoaches } from '@/hooks/use-tyt-api';
 import { LevelProgress } from '@/components/ui/LevelProgress';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,8 @@ export function HomePage() {
   const { data: stats } = useStats(userId);
   const { data: scores } = useScores(userId);
   const { data: recommendations, isLoading: recsLoading } = useRecommendations(userId);
+  const { data: coaches } = useCoaches();
+  const assignedCoach = coaches?.find(c => c.id === assignedCoachId);
   useEffect(() => {
     if (userRole === 'koç') navigate('/coach');
     else if (userRole === 'admin') navigate('/admin');
@@ -142,7 +144,6 @@ export function HomePage() {
               label={`${stats?.points || 0} TOPLAM PUAN`}
             />
           </PlayfulCard>
-          
           {assignedCoachId && (
             <PlayfulCard className="bg-playful-teal text-white flex flex-col md:flex-row items-center justify-between gap-6 border-playful-dark shadow-playful no-print">
               <div className="flex items-center gap-4">
@@ -150,7 +151,9 @@ export function HomePage() {
                   <MessageCircle className="w-8 h-8 fill-current" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black">Koçuna Bir Soru Sor!</h3>
+                  <h3 className="text-xl font-black">
+                    {assignedCoach ? `${assignedCoach.displayName}'a Soru Sor!` : "Koçuna Bir Soru Sor!"}
+                  </h3>
                   <p className="font-bold text-white/80">Sana özel çalışma programın hazır.</p>
                 </div>
               </div>
