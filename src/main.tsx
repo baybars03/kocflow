@@ -17,6 +17,7 @@ import { ProgressPage } from '@/pages/ProgressPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { SignupPage } from '@/pages/SignupPage'
 import { CoachDashboard } from '@/pages/CoachDashboard'
+import { CoachStudentDetail } from '@/pages/CoachStudentDetail'
 import { AdminDashboard } from '@/pages/AdminDashboard'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -71,6 +72,15 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['koç', 'admin']}>
         <PlayfulLayout><CoachDashboard /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/coach/student/:id",
+    element: (
+      <ProtectedRoute allowedRoles={['koç', 'admin']}>
+        <PlayfulLayout><CoachStudentDetail /></PlayfulLayout>
       </ProtectedRoute>
     ),
     errorElement: <RouteErrorBoundary />,

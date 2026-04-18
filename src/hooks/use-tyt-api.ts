@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry } from '@shared/types';
+import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest } from '@shared/types';
 export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -75,5 +75,43 @@ export function useCompletePomodoro(userId?: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stats', userId] });
     },
+  });
+}
+// Phase 11 Unicorn Hooks
+export function useAdminAnalytics() {
+  return useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: () => api<AdminAnalytics>('/api/admin/analytics'),
+  });
+}
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...updates }: Partial<User> & { id: string }) =>
+      api<User>(`/api/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+}
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/api/admin/users/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+}
+export function useCoachStudents(coachId?: string) {
+  return useQuery({
+    queryKey: ['coach-students-stats', coachId],
+    queryFn: () => api<CoachStudentStats[]>(`/api/coach/students/${coachId}`),
+    enabled: !!coachId,
+  });
+}
+export function useBulkAssignTask() {
+  return useMutation({
+    mutationFn: (req: BulkTaskRequest) => api('/api/coach/assign-bulk', { method: 'POST', body: JSON.stringify(req) }),
   });
 }

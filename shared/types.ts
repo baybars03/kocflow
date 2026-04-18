@@ -10,7 +10,11 @@ export interface User {
   role: UserRole;
   password?: string;
   coachAssignments?: string[];
+  assignedCoachId?: string;
   pomodoroSessions?: number;
+  isPremium?: boolean;
+  isSuspended?: boolean;
+  createdAt?: number;
 }
 export interface AuthResponse {
   user: User;
@@ -64,4 +68,24 @@ export interface LeaderboardEntry {
   avgNet: number;
   level: number;
   isCurrentUser?: boolean;
+}
+// Phase 11: Unicorn Types
+export interface AdminAnalytics {
+  totalGrowth: { date: string; count: number }[];
+  retentionRate: number;
+  popularTasks: { subject: string; count: number }[];
+  activeSessions: number;
+}
+export interface BulkTaskRequest {
+  studentIds: string[];
+  subject: TYTSubject;
+  topic: string;
+}
+export interface CoachStudentStats {
+  studentId: string;
+  email: string;
+  level: number;
+  streak: number;
+  latestNet: number;
+  lowProgressAlert: boolean;
 }
