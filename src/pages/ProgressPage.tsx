@@ -72,15 +72,20 @@ export function ProgressPage() {
               <DialogDescription className="text-muted-foreground">Deneme netlerini girerek ilerlemeni grafik üzerinde takip et.</DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
-              {['turkce', 'matematik', 'sosyal', 'fen'].map((subj) => (
-                <div key={subj} className="space-y-2">
-                  <label className="font-bold capitalize">{subj === 'turkce' ? 'Türkçe' : subj}</label>
+              {[
+                { key: 'turkce', label: 'Türkçe' },
+                { key: 'matematik', label: 'Matematik' },
+                { key: 'sosyal', label: 'Sosyal' },
+                { key: 'fen', label: 'Fen' }
+              ].map((subj) => (
+                <div key={subj.key} className="space-y-2">
+                  <label className="font-bold">{subj.label}</label>
                   <Input
                     type="number"
                     step="0.25"
                     className="playful-input"
-                    value={form[subj as keyof typeof form]}
-                    onChange={(e) => setForm({...form, [subj]: Number(e.target.value)})}
+                    value={form[subj.key as keyof typeof form]}
+                    onChange={(e) => setForm({...form, [subj.key]: Number(e.target.value)})}
                   />
                 </div>
               ))}
@@ -103,14 +108,14 @@ export function ProgressPage() {
           { label: 'Fen', value: latestScore.fen, avg: getAvg('fen'), color: 'bg-green-400' },
         ].map((item) => (
           <PlayfulCard key={item.label} className="flex flex-col items-center py-6 group relative border-playful-dark shadow-playful">
-            <div className={cn("absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-playful-dark", item.color)} />
+            <div className={cn("absolute top-3 right-3 w-4 h-4 rounded-full border-2 border-playful-dark", item.color)} />
             <span className="text-xs font-black uppercase text-muted-foreground mb-1">{item.label}</span>
             <span className="text-4xl font-black text-playful-dark">{item.value}</span>
-            <span className="text-[10px] font-bold mt-2 opacity-60">ORT: {item.avg}</span>
+            <span className="text-[10px] font-bold mt-2 opacity-60 bg-slate-100 px-2 py-0.5 rounded-full border border-playful-dark">ORT: {item.avg}</span>
           </PlayfulCard>
         ))}
       </div>
-      <PlayfulCard className="p-4 md:p-8 min-h-[450px] bg-white border-playful-dark shadow-playful">
+      <PlayfulCard className="p-4 md:p-10 min-h-[450px] bg-white border-playful-dark shadow-playful">
         {isLoading ? (
           <div className="flex items-center justify-center h-[350px]">
             <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
@@ -118,25 +123,52 @@ export function ProgressPage() {
         ) : scores && scores.length > 0 ? (
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="6 6" vertical={false} stroke="#CBD5E1" />
-                <XAxis dataKey="formattedDate" tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} axisLine={{ stroke: '#1e293b', strokeWidth: 4 }} />
-                <YAxis domain={[0, 120]} tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} axisLine={{ stroke: '#1e293b', strokeWidth: 4 }} />
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#E2E8F0" />
+                <XAxis 
+                  dataKey="formattedDate" 
+                  tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} 
+                  axisLine={{ stroke: '#1e293b', strokeWidth: 4 }}
+                  dy={10}
+                />
+                <YAxis 
+                  domain={[0, 120]} 
+                  tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} 
+                  axisLine={{ stroke: '#1e293b', strokeWidth: 4 }}
+                  dx={-10}
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: '1.5rem', border: '4px solid #1e293b', boxShadow: '6px 6px 0px 0px rgba(30,41,59,1)', fontWeight: 'bold' }}
+                  contentStyle={{ 
+                    borderRadius: '1.5rem', 
+                    border: '4px solid #1e293b', 
+                    boxShadow: '6px 6px 0px 0px rgba(30,41,59,1)', 
+                    fontWeight: 'black',
+                    padding: '12px'
+                  }}
                   cursor={{ stroke: '#1e293b', strokeWidth: 4, strokeDasharray: '0' }}
                 />
-                <Legend verticalAlign="top" height={48} iconType="circle" />
-                <Line name="Toplam Net" type="stepAfter" dataKey="totalNet" stroke="#1e293b" strokeWidth={6} dot={{ r: 8, fill: '#1e293b', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} />
-                <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={4} dot={false} />
-                <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={4} dot={false} />
+                <Legend verticalAlign="top" height={60} iconType="circle" wrapperStyle={{ fontWeight: 'bold', fontSize: '14px' }} />
+                <Line 
+                  name="Toplam Net" 
+                  type="monotone" 
+                  dataKey="totalNet" 
+                  stroke="#1e293b" 
+                  strokeWidth={8} 
+                  dot={{ r: 8, fill: '#1e293b', strokeWidth: 4, stroke: '#fff' }} 
+                  activeDot={{ r: 12, strokeWidth: 0 }} 
+                />
+                <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={4} dot={false} strokeDasharray="5 5" />
+                <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={4} dot={false} strokeDasharray="5 5" />
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-[350px] text-center space-y-4">
-            <TrendingUp className="w-16 h-16 text-slate-300" />
+            <div className="w-24 h-24 bg-slate-100 border-4 border-dashed border-slate-300 rounded-[2rem] flex items-center justify-center">
+              <TrendingUp className="w-12 h-12 text-slate-300" />
+            </div>
             <p className="text-xl font-black text-slate-400">Henüz Veri Yok</p>
+            <p className="text-slate-400 font-bold max-w-xs">İlk deneme sonucunu ekleyerek gelişim grafiğini başlatabilirsin!</p>
           </div>
         )}
       </PlayfulCard>

@@ -3,18 +3,16 @@ import type { Env } from './core-utils';
 import { TaskEntity, ScoreEntity, UserEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
 import type { TYTTask, DenemeScore, UserStats, User, LoginRequest, SignupRequest } from "@shared/types";
+import { format } from "date-fns";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AUTH API
   app.post('/api/auth/login', async (c) => {
     const { email, password } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
-    // Ensure demo accounts are seeded before searching
     await UserEntity.ensureSeed(c.env);
     const users = await UserEntity.list(c.env);
     const user = users.items.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (!user) return bad(c, 'Kullanıcı bulunamadı');
-    // For demo/hackathon purposes, we accept any login with email match
-    // Real systems would verify `password` here.
     return ok(c, { user, token: 'mock-jwt-token-' + user.id });
   });
   app.post('/api/auth/signup', async (c) => {
@@ -112,17 +110,27 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const level = Math.floor(currentPoints / pointsPerLevel) + 1;
     const pointsInCurrentLevel = currentPoints % pointsPerLevel;
     const progress = Math.floor((pointsInCurrentLevel / pointsPerLevel) * 100);
+    // Precise Streak Calculation logic
     let streak = 0;
-    if (completed > 0 || scores.length > 0) {
-      const taskTimes = tasks.map(t => t.createdAt);
-      const scoreTimes = scores.map(s => new Date(s.date).getTime());
-      const allTimes = [...taskTimes, ...scoreTimes];
-      const lastActivityTs = allTimes.length > 0 ? Math.max(...allTimes) : 0;
-      const daysSinceLastActivity = lastActivityTs > 0 
-        ? Math.floor((Date.now() - lastActivityTs) / (1000 * 60 * 60 * 24))
-        : 99;
-      if (daysSinceLastActivity < 2) {
-        streak = Math.max(1, Math.min(Math.floor(completed / 2) + scores.length, 7));
+    const taskDates = tasks.map(t => format(new Date(t.createdAt), 'yyyy-MM-dd'));
+    const scoreDates = scores.map(s => format(new Date(s.date), 'yyyy-MM-dd'));
+    const uniqueDates = Array.from(new Set([...taskDates, ...scoreDates])).sort((a, b) => b.localeCompare(a));
+    if (uniqueDates.length > 0) {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const yesterday = format(new Date(Date.now() - 86400000), 'yyyy-MM-dd');
+      // Streak counts if active today or yesterday
+      if (uniqueDates[0] === today || uniqueDates[0] === yesterday) {
+        streak = 1;
+        for (let i = 0; i < uniqueDates.length - 1; i++) {
+          const d1 = new Date(uniqueDates[i]);
+          const d2 = new Date(uniqueDates[i+1]);
+          const diff = (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24);
+          if (Math.round(diff) === 1) {
+            streak++;
+          } else {
+            break;
+          }
+        }
       }
     }
     const stats: UserStats = {
