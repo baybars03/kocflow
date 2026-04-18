@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Rocket, Zap, AlarmClock, GraduationCap } from 'lucide-react';
+import { Rocket, Zap, AlarmClock, GraduationCap, ArrowRight } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
+import { useAuth } from '@/hooks/use-auth';
 const TARGET_DATE = new Date('2025-06-14');
 export function HeroSection() {
   const [days, setDays] = useState(0);
+  const user = useAuth((s) => s.user);
+  const userRole = user?.role;
+  const userEmail = user?.email;
+  const isLoggedIn = !!user;
   useEffect(() => {
     setDays(differenceInDays(TARGET_DATE, new Date()));
   }, []);
+  const getHeading = () => {
+    if (isLoggedIn) return `Tekrar Hoş Geldin, ${userEmail?.split('@')[0]}!`;
+    return "Öğrenci Akışını";
+  };
+  const getPrimaryCTA = () => {
+    if (!isLoggedIn) return { label: "KocFlow'a Katıl!", path: "/signup?role=öğrenci", icon: Rocket };
+    if (userRole === 'koç') return { label: "Panele Dön", path: "/coach", icon: ArrowRight };
+    if (userRole === 'admin') return { label: "Yönetime Git", path: "/admin", icon: Zap };
+    return { label: "Akışına Dön", path: "/dashboard", icon: ArrowRight };
+  };
+  const getSecondaryCTA = () => {
+    if (!isLoggedIn || userRole === 'öğrenci') return { label: "Koçları İncele", path: "/marketplace", icon: Zap };
+    return { label: "Öğrenci Yönetimi", path: "/coach", icon: GraduationCap };
+  };
+  const primaryCTA = getPrimaryCTA();
+  const secondaryCTA = getSecondaryCTA();
   return (
     <section className="text-center space-y-10 pt-16 md:pt-24 px-4 overflow-hidden relative">
       <div className="flex flex-col items-center gap-6">
@@ -18,7 +39,7 @@ export function HeroSection() {
           className="bg-white border-4 border-playful-dark px-6 py-2 rounded-full font-black text-xs md:text-sm uppercase tracking-[0.15em] shadow-playful inline-flex items-center gap-3"
         >
           <AlarmClock className="w-5 h-5 text-playful-red" />
-          Geleceğin İçin Geri Sayım: {days} Gün
+          TYT Geri Sayım: {days} Gün
         </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -38,24 +59,24 @@ export function HeroSection() {
         animate={{ y: 0, opacity: 1 }}
         className="text-5xl md:text-8xl font-black text-playful-dark tracking-tighter leading-[0.9] uppercase"
       >
-        Öğrenci Akışını <br />
-        <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">KocFlow İle Yönet!</span>
+        {getHeading()} <br />
+        {!isLoggedIn && <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">KocFlow İle Yönet!</span>}
       </motion.h1>
       <p className="text-lg md:text-2xl font-bold text-muted-foreground max-w-2xl mx-auto leading-tight">
-        Türkiye'nin en gelişmiş <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">AI destekli</span> rehberlik ve koçluk ekosistemi. Başarı bir şans değil, bir akıştır.
+        Türkiye'nin en gelişmiş <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">AI destekli</span> rehberlik ve koçluk ekosistemi.
       </p>
       <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
         <Link
-          to="/signup"
+          to={primaryCTA.path}
           className="playful-button bg-playful-red text-white text-2xl md:text-3xl py-6 md:py-8 px-10 md:px-14 group min-w-[280px]"
         >
-          KocFlow'a Katıl! <Rocket className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ml-2" />
+          {primaryCTA.label} <primaryCTA.icon className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ml-2" />
         </Link>
         <Link
-          to="/marketplace"
+          to={secondaryCTA.path}
           className="playful-button bg-playful-yellow text-playful-dark text-lg md:text-xl py-5 md:py-6 px-8 md:px-10 group min-w-[240px]"
         >
-          Koçunu Ara <Zap className="w-5 h-5 fill-playful-dark text-playful-dark group-hover:scale-110 transition-transform ml-2" />
+          {secondaryCTA.label} <secondaryCTA.icon className="w-5 h-5 fill-playful-dark text-playful-dark group-hover:scale-110 transition-transform ml-2" />
         </Link>
       </div>
       <div className="flex items-center justify-center gap-6 pt-10 opacity-40 grayscale">

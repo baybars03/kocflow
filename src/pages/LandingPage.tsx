@@ -1,6 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
+import { useAuth } from '@/hooks/use-auth';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsSection } from '@/components/landing/StatsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -8,23 +7,55 @@ import { PopularCoaches } from '@/components/landing/PopularCoaches';
 import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
 import { AIKocFeature } from '@/components/landing/AIKocFeature';
+import { StudentLandingTeaser } from '@/components/landing/StudentLandingTeaser';
+import { CoachLandingTeaser } from '@/components/landing/CoachLandingTeaser';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Link } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 export function LandingPage() {
-  const { data: stats } = useQuery({
-    queryKey: ['landing-stats'],
-    queryFn: () => api<{ activeStudents: number, totalTasksDone: number, avgNetIncrease: number }>('/api/landing/stats'),
-  });
-  return (
-    <div className="space-y-16 md:space-y-24 pb-32">
-      <HeroSection />
-      <div className="max-w-7xl mx-auto px-4">
-        <StatsSection stats={stats} />
+  const user = useAuth((s) => s.user);
+  const isHydrated = useAuth((s) => s.isHydrated);
+  if (!isHydrated) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-playful-teal border-t-transparent rounded-full animate-spin" />
       </div>
+    );
+  }
+  const role = user?.role;
+  const isLoggedIn = !!user;
+  return (
+    <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden">
+      <HeroSection />
+      <AnimatePresence mode="wait">
+        {isLoggedIn && role === 'öğrenci' && (
+          <motion.div
+            key="student-teaser"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <StudentLandingTeaser />
+          </motion.div>
+        )}
+        {isLoggedIn && role === 'koç' && (
+          <motion.div
+            key="coach-teaser"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <CoachLandingTeaser />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="max-w-7xl mx-auto px-4">
+        <StatsSection />
+      </div>
+      {!isLoggedIn && <PracticeQuizPreview />}
       <PopularCoaches />
       <AIKocFeature />
-      <PracticeQuizPreview />
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
           <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">Neden KocFlow? 🤔</h2>
@@ -32,7 +63,7 @@ export function LandingPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: "Kişiselleştirilmiş", desc: "Eksiklerini saniyeler içinde analiz eder, en verimli rotayı saniyeler içinde çizer.", icon: Zap, color: "bg-playful-red" },
+            { title: "Kişiselleştirilmiş", desc: "Eksiklerini analiz eder, en verimli rotayı saniyeler içinde çizer.", icon: Zap, color: "bg-playful-red" },
             { title: "Birebir Destek", desc: "Seçtiğin uzman koçla hedeflerini her hafta masaya yatır ve akışta kal.", icon: Target, color: "bg-playful-teal" },
             { title: "Flow Atla!", desc: "Puan topla, rütbe kazan, eğitimi bir yük olarak değil oyun olarak gör.", icon: Trophy, color: "bg-playful-yellow" },
           ].map((f, i) => (
