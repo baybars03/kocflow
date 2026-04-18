@@ -83,7 +83,7 @@ function runSetupCommands() {
     "bun add canvas-confetti lucide-react clsx tailwind-merge framer-motion zustand react-router-dom @tanstack/react-query date-fns react-swipeable",
     "bun add react-swipeable",
     "bun add embla-carousel-react",
-    "bun add framer-motion lucide-react clsx tailwind-merge"
+    "bun add framer-motion lucide-react clsx tailwind-merge canvas-confetti"
 ];
     
     if (commands.length === 0) {
