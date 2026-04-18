@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Rocket, Zap, AlarmClock } from 'lucide-react';
+import { Rocket, Zap, AlarmClock, GraduationCap } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 const TARGET_DATE = new Date('2025-06-14');
 export function HeroSection() {
@@ -18,7 +18,19 @@ export function HeroSection() {
           className="bg-white border-4 border-playful-dark px-6 py-2 rounded-full font-black text-xs md:text-sm uppercase tracking-[0.15em] shadow-playful inline-flex items-center gap-3"
         >
           <AlarmClock className="w-5 h-5 text-playful-red" />
-          TYT 2025'e Son {days} Gün
+          YKS Maratonuna Son {days} Gün
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex gap-2"
+        >
+          {['TYT', 'LGS', 'KPSS', 'YDT'].map((exam) => (
+            <span key={exam} className="bg-playful-yellow border-2 border-playful-dark px-3 py-0.5 rounded-lg text-[10px] font-black shadow-playful-active">
+              {exam}
+            </span>
+          ))}
         </motion.div>
       </div>
       <motion.h1
@@ -26,11 +38,11 @@ export function HeroSection() {
         animate={{ y: 0, opacity: 1 }}
         className="text-5xl md:text-8xl font-black text-playful-dark tracking-tighter leading-[0.9] uppercase"
       >
-        TYT'yi Oyun Yap, <br />
-        <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">Kazanmaya Başla!</span>
+        İlkokul, Ortaokul, Lise <br />
+        <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">AI Koçla Başarı!</span>
       </motion.h1>
       <p className="text-lg md:text-2xl font-bold text-muted-foreground max-w-2xl mx-auto leading-tight">
-        Netlerini yapay zeka ve profesyonel koçlarla <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">zirveye taşı</span>. TYT artık bir stres değil, bir başarı hikayesi!
+        Tüm K-12 seviyeleri için <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">yapay zeka destekli</span> rehberlik. Sınavları stres değil, bir oyun haline getiriyoruz!
       </p>
       <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
         <Link
@@ -45,6 +57,10 @@ export function HeroSection() {
         >
           Deneme Çöz <Zap className="w-5 h-5 fill-playful-dark text-playful-dark group-hover:scale-110 transition-transform ml-2" />
         </Link>
+      </div>
+      <div className="flex items-center justify-center gap-6 pt-10 opacity-40 grayscale">
+         <div className="flex items-center gap-2 font-black text-xs uppercase"><GraduationCap className="w-4 h-4" /> MEB Müfredat Uyumlu</div>
+         <div className="flex items-center gap-2 font-black text-xs uppercase"><Zap className="w-4 h-4" /> Anlık Geri Bildirim</div>
       </div>
     </section>
   );

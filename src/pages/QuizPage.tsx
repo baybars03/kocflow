@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { QuizResult } from '@shared/types';
 const MOCK_QUESTIONS = [
   { id: '1', subject: 'Matematik', text: "x < x² ve x³ < x şartını sağlayan x değerleri hangi aralıktadır?", options: ["(-1, 0)", "(0, 1)", "(1, 2)", "(-∞, -1)"], correct: 0 },
@@ -33,7 +34,7 @@ export function QuizPage() {
     finalAnswers.forEach((ans, i) => {
       if (ans === MOCK_QUESTIONS[i].correct) correctCount++;
     });
-    const timeSpent = startTimeRef.current 
+    const timeSpent = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
       : INITIAL_TIME - timeLeft;
     const results: QuizResult = {
@@ -79,7 +80,7 @@ export function QuizPage() {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [step]); // Only step in dependency to avoid re-creating on every tick
+  }, [step, timeLeft]);
   useEffect(() => {
     if (timeLeft === 0 && step === 'active' && !isSubmitting) {
       handleSubmit(answers);

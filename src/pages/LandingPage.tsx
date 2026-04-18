@@ -3,15 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsSection } from '@/components/landing/StatsSection';
-import { SponsorsSection } from '@/components/landing/SponsorsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { PopularCoaches } from '@/components/landing/PopularCoaches';
 import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
+import { AIKocFeature } from '@/components/landing/AIKocFeature';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Link } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
-import { motion } from 'framer-motion';
 export function LandingPage() {
   const { data: stats } = useQuery({
     queryKey: ['landing-stats'],
@@ -21,12 +20,12 @@ export function LandingPage() {
     <div className="space-y-16 md:space-y-24 pb-32">
       {/* 1. HERO - Hook */}
       <HeroSection />
-      {/* 2. TRUST - Sponsors (Immediate Validation) */}
-      <SponsorsSection />
-      {/* 3. PROOF - Stats */}
+      {/* 2. PROOF - Stats */}
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection stats={stats} />
       </div>
+      {/* 3. AI CORE FEATURE - Spotlight */}
+      <AIKocFeature />
       {/* 4. ENGAGEMENT - Practice Quiz Teaser */}
       <PracticeQuizPreview />
       {/* 5. VALUE PROP - Features */}
@@ -37,7 +36,7 @@ export function LandingPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: "Yapay Zeka Koçu", desc: "Eksiklerini saniyeler içinde analiz eder, en verimli rotayı çizer.", icon: Zap, color: "bg-playful-red" },
+            { title: "Kişiselleştirilmiş", desc: "Eksiklerini saniyeler içinde analiz eder, en verimli rotayı çizer.", icon: Zap, color: "bg-playful-red" },
             { title: "Birebir Destek", desc: "Seçtiğin uzman koçla hedeflerini her hafta masaya yatır.", icon: Target, color: "bg-playful-teal" },
             { title: "Lvl Atla!", desc: "Puan topla, rütbe kazan, sınavı bir yük olarak değil oyun olarak gör.", icon: Trophy, color: "bg-playful-yellow" },
           ].map((f, i) => (
@@ -68,7 +67,7 @@ export function LandingPage() {
               <span className="text-playful-yellow underline decoration-playful-yellow decoration-4 underline-offset-8">Bugün Başla!</span>
             </h2>
             <p className="text-lg md:text-xl font-bold text-white/70 max-w-2xl mx-auto">
-              Binlerce öğrenci arasına katıl, TYT maratonunda yalnız kalma.
+              Binlerce öğrenci arasına katıl, sınav maratonunda yalnız kalma.
             </p>
           </div>
           <div className="relative flex flex-col sm:flex-row gap-6 justify-center pt-8">
