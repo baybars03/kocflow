@@ -16,7 +16,10 @@ export function SignupPage() {
   const navigate = useNavigate();
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email) {
+      toast.error('Lütfen bir e-posta adresi girin.');
+      return;
+    }
     setLoading(true);
     try {
       await signup({ email, role });
@@ -41,7 +44,7 @@ export function SignupPage() {
             <h1 className="text-3xl font-black text-playful-dark">Kampüse Katıl! 🎓</h1>
             <p className="font-bold text-muted-foreground">Yeni bir hesap oluştur ve hedeflerine koş.</p>
           </div>
-          <form onSubmit={handleSignup} className="space-y-8">
+          <form onSubmit={handleSignup} className="space-y-8" noValidate>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {roles.map((r) => (
                 <div
@@ -66,7 +69,6 @@ export function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="playful-input h-14"
-                  required
                 />
               </div>
               <div className="space-y-2">
@@ -75,7 +77,6 @@ export function SignupPage() {
                   type="password"
                   placeholder="••••••••"
                   className="playful-input h-14"
-                  required
                 />
               </div>
             </div>
@@ -94,7 +95,7 @@ export function SignupPage() {
           <div className="mt-8 text-center">
             <p className="font-bold text-muted-foreground">
               Zaten hesabın var mı?{' '}
-              <Link to="/login" className="text-playful-teal hover:underline">
+              <Link to="/login" className="text-playful-teal hover:underline font-black">
                 Giriş Yap!
               </Link>
             </p>
@@ -110,11 +111,11 @@ export function SignupPage() {
               <p className="text-sm font-medium text-white/70">Hazır hesaplarla hızlıca göz at.</p>
             </div>
           </div>
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="flex items-center gap-2 bg-playful-yellow text-playful-dark px-4 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-1 transition-all"
           >
-            Demo <ArrowRight className="w-4 h-4" />
+            Hızlı Giriş <ArrowRight className="w-4 h-4" />
           </Link>
         </PlayfulCard>
       </div>

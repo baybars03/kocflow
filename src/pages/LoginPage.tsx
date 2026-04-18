@@ -8,20 +8,21 @@ import { toast } from 'sonner';
 import { LogIn, Loader2, User, Users, ShieldCheck } from 'lucide-react';
 export function LoginPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const login = useAuth((s) => s.login);
   const navigate = useNavigate();
-  const handleSubmit = async (e?: React.FormEvent, directEmail?: string) => {
+  const handleSubmit = async (e?: React.FormEvent, directEmail?: string, directPassword?: string) => {
     if (e) e.preventDefault();
     const loginEmail = directEmail || email;
-    if (!loginEmail) return;
-    // Visually sync the input if a direct email was provided
-    if (directEmail) {
-      setEmail(directEmail);
+    const loginPassword = directPassword || password;
+    if (!loginEmail) {
+      toast.error('Lütfen e-posta adresinizi girin.');
+      return;
     }
     setLoading(true);
     try {
-      await login({ email: loginEmail });
+      await login({ email: loginEmail, password: loginPassword });
       toast.success('Giriş yapıldı! Hoş geldin. 🚀');
       navigate('/');
     } catch (err) {
@@ -29,6 +30,12 @@ export function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+  const handleDemoLogin = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword('demo123');
+    // Immediate submission with provided credentials
+    handleSubmit(undefined, demoEmail, 'demo123');
   };
   const demoLogins = [
     { role: 'Öğrenci', email: 'ogrenci1@kampus.com', icon: User, color: 'bg-playful-teal' },
@@ -46,7 +53,7 @@ export function LoginPage() {
             <h1 className="text-3xl font-black text-playful-dark">Tekrar Hoş Geldin!</h1>
             <p className="font-bold text-muted-foreground">Kampüse giriş yap ve çalışmaya başla.</p>
           </div>
-          <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-6" noValidate>
             <div className="space-y-2">
               <label className="font-bold text-playful-dark">E-posta Adresi</label>
               <Input
@@ -55,7 +62,6 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="playful-input h-14"
-                required
               />
             </div>
             <div className="space-y-2">
@@ -63,8 +69,9 @@ export function LoginPage() {
               <Input
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="playful-input h-14"
-                required
               />
             </div>
             <Button
@@ -98,7 +105,7 @@ export function LoginPage() {
             {demoLogins.map((demo) => (
               <button
                 key={demo.email}
-                onClick={() => handleSubmit(undefined, demo.email)}
+                onClick={() => handleDemoLogin(demo.email)}
                 disabled={loading}
                 className={`flex items-center justify-between p-4 border-4 border-playful-dark rounded-2xl bg-white shadow-playful hover:-translate-y-1 hover:shadow-playful-hover active:translate-y-0 active:shadow-playful-active transition-all group`}
               >
@@ -116,7 +123,7 @@ export function LoginPage() {
             ))}
           </div>
           <p className="text-center text-xs font-bold text-playful-dark/50">
-            Demo için sadece e-posta gereklidir. Şifre: <span className="text-playful-dark">demo123</span>
+            Demo için sadece butona basmanız yeterlidir. Şifre: <span className="text-playful-dark">demo123</span>
           </p>
         </div>
       </div>

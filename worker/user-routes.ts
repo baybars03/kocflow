@@ -6,12 +6,15 @@ import type { TYTTask, DenemeScore, UserStats, User, LoginRequest, SignupRequest
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AUTH API
   app.post('/api/auth/login', async (c) => {
-    const { email } = await c.req.json() as LoginRequest;
+    const { email, password } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
+    // Ensure demo accounts are seeded before searching
     await UserEntity.ensureSeed(c.env);
     const users = await UserEntity.list(c.env);
-    const user = users.items.find(u => u.email === email);
-    if (!user) return bad(c, 'Invalid credentials');
+    const user = users.items.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) return bad(c, 'Kullanıcı bulunamadı');
+    // For demo/hackathon purposes, we accept any login with email match
+    // Real systems would verify `password` here.
     return ok(c, { user, token: 'mock-jwt-token-' + user.id });
   });
   app.post('/api/auth/signup', async (c) => {
@@ -92,7 +95,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, await ScoreEntity.create(c.env, score));
   });
-  // STATS API - Refined Logic
+  // STATS API
   app.get('/api/stats', async (c) => {
     const userId = c.req.query('userId');
     if (!userId) return bad(c, 'userId required');
@@ -109,7 +112,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const level = Math.floor(currentPoints / pointsPerLevel) + 1;
     const pointsInCurrentLevel = currentPoints % pointsPerLevel;
     const progress = Math.floor((pointsInCurrentLevel / pointsPerLevel) * 100);
-    // Improved streak calculation
     let streak = 0;
     if (completed > 0 || scores.length > 0) {
       const taskTimes = tasks.map(t => t.createdAt);
@@ -119,7 +121,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const daysSinceLastActivity = lastActivityTs > 0 
         ? Math.floor((Date.now() - lastActivityTs) / (1000 * 60 * 60 * 24))
         : 99;
-      // If active in last 2 days, calculate a mock streak based on engagement
       if (daysSinceLastActivity < 2) {
         streak = Math.max(1, Math.min(Math.floor(completed / 2) + scores.length, 7));
       }
