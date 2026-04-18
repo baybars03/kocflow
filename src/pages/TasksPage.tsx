@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useTasks, useStats } from '@/hooks/use-tyt-api';
+import { useAuth } from '@/hooks/use-auth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import type { TYTSubject } from '@shared/types';
 export function TasksPage() {
-  const { data: tasks, isLoading, updateTask, createTask, deleteTask } = useTasks();
-  const { data: stats } = useStats();
+  const user = useAuth((s) => s.user);
+  const { data: tasks, isLoading, updateTask, createTask, deleteTask } = useTasks(user?.id);
+  const { data: stats } = useStats(user?.id);
   const [newTopic, setNewTopic] = useState('');
   const [newSubject, setNewSubject] = useState<TYTSubject>('Matematik');
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +38,7 @@ export function TasksPage() {
       }
       setPrevLevel(stats.level);
     }
-  }, [stats?.level]);
+  }, [stats?.level, prevLevel]);
   const handleToggle = (id: string, currentDone: boolean) => {
     updateTask.mutate({ id, done: !currentDone }, {
       onSuccess: (data) => {
@@ -53,8 +55,8 @@ export function TasksPage() {
     });
   };
   const handleCreate = () => {
-    if (!newTopic.trim()) return;
-    createTask.mutate({ topic: newTopic, subject: newSubject }, {
+    if (!newTopic.trim() || !user) return;
+    createTask.mutate({ topic: newTopic, subject: newSubject, userId: user.id }, {
       onSuccess: () => {
         setNewTopic('');
         setIsOpen(false);
@@ -183,10 +185,6 @@ export function TasksPage() {
             <p className="text-slate-400 font-bold max-w-sm mt-2">
               Henüz bir görev eklememişsin. Sağ üstteki butona basarak ilk TYT görevini oluşturabilirsin! 🚀
             </p>
-            <div className="mt-8 flex items-center gap-2 text-playful-teal font-black animate-bounce">
-              <Sparkles className="w-5 h-5 fill-current" />
-              <span>İlk adım her zaman en zoru, gerisi gelecek!</span>
-            </div>
           </div>
         )}
       </div>

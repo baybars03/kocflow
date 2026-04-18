@@ -3,9 +3,31 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
+export type UserRole = 'admin' | 'öğrenci' | 'koç';
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  password?: string;
+  coachAssignments?: string[]; // IDs of students assigned to this coach
+}
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+export interface LoginRequest {
+  email: string;
+  password?: string;
+}
+export interface SignupRequest {
+  email: string;
+  password?: string;
+  role: UserRole;
+}
 export type TYTSubject = 'Matematik' | 'Türkçe' | 'Sosyal' | 'Fen';
 export interface TYTTask {
   id: string;
+  userId: string;
   subject: TYTSubject;
   topic: string;
   done: boolean;
@@ -13,6 +35,7 @@ export interface TYTTask {
 }
 export interface DenemeScore {
   id: string;
+  userId: string;
   date: string; // ISO format
   turkce: number;
   matematik: number;

@@ -14,22 +14,47 @@ import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { TasksPage } from '@/pages/TasksPage'
 import { ProgressPage } from '@/pages/ProgressPage'
+import { LoginPage } from '@/pages/LoginPage'
+import { SignupPage } from '@/pages/SignupPage'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: <LoginPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
     path: "/",
-    element: <PlayfulLayout><HomePage /></PlayfulLayout>,
+    element: (
+      <ProtectedRoute allowedRoles={['öğrenci', 'koç', 'admin']}>
+        <PlayfulLayout><HomePage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
     errorElement: <RouteErrorBoundary />,
   },
   {
     path: "/tasks",
-    element: <PlayfulLayout><TasksPage /></PlayfulLayout>,
+    element: (
+      <ProtectedRoute allowedRoles={['öğrenci']}>
+        <PlayfulLayout><TasksPage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
     errorElement: <RouteErrorBoundary />,
   },
   {
     path: "/progress",
-    element: <PlayfulLayout><ProgressPage /></PlayfulLayout>,
+    element: (
+      <ProtectedRoute allowedRoles={['öğrenci']}>
+        <PlayfulLayout><ProgressPage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
     errorElement: <RouteErrorBoundary />,
   },
 ]);

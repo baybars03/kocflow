@@ -13,13 +13,15 @@ import {
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useScores } from '@/hooks/use-tyt-api';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { Plus, Loader2, Award, Info, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 export function ProgressPage() {
-  const { data: scores, isLoading, createScore } = useScores();
+  const user = useAuth((s) => s.user);
+  const { data: scores, isLoading, createScore } = useScores(user?.id);
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({ turkce: 0, matematik: 0, sosyal: 0, fen: 0 });
   const chartData = (scores || []).map(score => ({
@@ -34,8 +36,10 @@ export function ProgressPage() {
     return (scores.reduce((acc, s) => acc + s[key], 0) / scores.length).toFixed(1);
   };
   const handleAddScore = () => {
+    if (!user) return;
     const totalNet = Number(form.turkce) + Number(form.matematik) + Number(form.sosyal) + Number(form.fen);
     createScore.mutate({
+      userId: user.id,
       date: new Date().toISOString(),
       ...form,
       totalNet
@@ -112,65 +116,30 @@ export function ProgressPage() {
             <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
           </div>
         ) : scores && scores.length > 0 ? (
-          <>
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-black">Net Gelişimi</h2>
-                <p className="font-medium text-muted-foreground">Zaman içindeki performansın</p>
-              </div>
-              <div className="hidden md:flex items-center gap-2 bg-slate-100 p-2 rounded-xl border-2 border-playful-dark">
-                <Award className="w-5 h-5 text-playful-yellow" />
-                <span className="text-xs font-bold">En İyi: {scores.length > 0 ? Math.max(...scores.map(s => s.totalNet || 0)) : 0} Net</span>
-              </div>
-            </div>
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="formattedDate" tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
-                  <YAxis domain={[0, 120]} tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '1.5rem', border: '4px solid #1e293b', boxShadow: '6px 6px 0px 0px rgba(30,41,59,1)', fontWeight: 'bold' }}
-                    cursor={{ stroke: '#1e293b', strokeWidth: 2, strokeDasharray: '5 5' }}
-                  />
-                  <Legend verticalAlign="top" height={48} iconType="circle" />
-                  <Line name="Toplam Net" type="stepAfter" dataKey="totalNet" stroke="#1e293b" strokeWidth={5} dot={{ r: 8, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} />
-                  <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={3} dot={false} />
-                  <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={3} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </>
+          <div className="h-[350px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="formattedDate" tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
+                <YAxis domain={[0, 120]} tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '1.5rem', border: '4px solid #1e293b', boxShadow: '6px 6px 0px 0px rgba(30,41,59,1)', fontWeight: 'bold' }}
+                  cursor={{ stroke: '#1e293b', strokeWidth: 2, strokeDasharray: '5 5' }}
+                />
+                <Legend verticalAlign="top" height={48} iconType="circle" />
+                <Line name="Toplam Net" type="stepAfter" dataKey="totalNet" stroke="#1e293b" strokeWidth={5} dot={{ r: 8, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} />
+                <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={3} dot={false} />
+                <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={3} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-[350px] text-center space-y-4">
-            <div className="p-6 bg-slate-50 rounded-full border-4 border-dashed border-slate-300">
-              <TrendingUp className="w-16 h-16 text-slate-300" />
-            </div>
-            <div>
-              <p className="text-xl font-black text-slate-400">Henüz Veri Yok</p>
-              <p className="font-bold text-slate-400/60">İlk deneme sonucunu ekleyerek grafiği başlat!</p>
-            </div>
+            <TrendingUp className="w-16 h-16 text-slate-300" />
+            <p className="text-xl font-black text-slate-400">Henüz Veri Yok</p>
           </div>
         )}
       </PlayfulCard>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <PlayfulCard className="bg-playful-yellow/20 border-dashed">
-          <h3 className="text-xl font-black mb-4 flex items-center gap-2">
-            <Award className="w-6 h-6" /> Branş Analizi
-          </h3>
-          <p className="font-medium text-sm text-playful-dark/70">
-            Türkçe ve Matematik branşlarında son 3 denemedir yükseliştesin. Fen bilimleri için biraz daha konu tekrarı gerekebilir!
-          </p>
-        </PlayfulCard>
-        <PlayfulCard className="bg-playful-teal/20 border-dashed">
-          <h3 className="text-xl font-black mb-4 flex items-center gap-2">
-            <Award className="w-6 h-6" /> Strateji Notu
-          </h3>
-          <p className="font-medium text-sm text-playful-dark/70">
-            Sosyal Bilgiler netlerin oldukça istikrarlı. Kalan zamanını Matematik problemlerine ayırmak toplam netini daha hızlı artırabilir.
-          </p>
-        </PlayfulCard>
-      </div>
     </div>
   );
 }
