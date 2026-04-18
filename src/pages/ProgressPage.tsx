@@ -14,8 +14,8 @@ import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useScores } from '@/hooks/use-tyt-api';
 import { cn } from '@/lib/utils';
-import { Plus, Loader2, Award, Info } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Loader2, Award, Info, TrendingUp } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 export function ProgressPage() {
@@ -63,7 +63,10 @@ export function ProgressPage() {
             </button>
           </DialogTrigger>
           <DialogContent className="border-4 border-playful-dark rounded-[2rem]">
-            <DialogHeader><DialogTitle className="text-2xl font-black">Deneme Netlerini Gir</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black">Deneme Netlerini Gir</DialogTitle>
+              <DialogDescription className="text-muted-foreground">Deneme netlerini girerek ilerlemeni grafik üzerinde takip et.</DialogDescription>
+            </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
               {['turkce', 'matematik', 'sosyal', 'fen'].map((subj) => (
                 <div key={subj} className="space-y-2">
@@ -117,7 +120,7 @@ export function ProgressPage() {
               </div>
               <div className="hidden md:flex items-center gap-2 bg-slate-100 p-2 rounded-xl border-2 border-playful-dark">
                 <Award className="w-5 h-5 text-playful-yellow" />
-                <span className="text-xs font-bold">En İyi: {Math.max(...scores.map(s => s.totalNet))} Net</span>
+                <span className="text-xs font-bold">En İyi: {scores.length > 0 ? Math.max(...scores.map(s => s.totalNet || 0)) : 0} Net</span>
               </div>
             </div>
             <div className="h-[350px] w-full">

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useTasks, useStats } from '@/hooks/use-tyt-api';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,7 +36,7 @@ export function TasksPage() {
       }
       setPrevLevel(stats.level);
     }
-  }, [stats?.level, prevLevel]);
+  }, [stats?.level]);
   const handleToggle = (id: string, currentDone: boolean) => {
     updateTask.mutate({ id, done: !currentDone }, {
       onSuccess: (data) => {
@@ -79,6 +79,7 @@ export function TasksPage() {
           <DialogContent className="border-4 border-playful-dark rounded-[2rem]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black">Yeni Görev Ekle</DialogTitle>
+              <DialogDescription className="text-muted-foreground">TYT konularını buraya ekle ve tamamla!</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
