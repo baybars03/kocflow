@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsSection } from '@/components/landing/StatsSection';
@@ -7,17 +7,31 @@ import { PopularCoaches } from '@/components/landing/PopularCoaches';
 import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
 import { AIKocFeature } from '@/components/landing/AIKocFeature';
+import { CoachTeaser } from '@/components/landing/CoachTeaser';
+import { RoleSelectionPopup } from '@/components/landing/RoleSelectionPopup';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Link, useLocation } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 export function LandingPage() {
   const isHydrated = useAuth((s) => s.isHydrated);
-  const userEmail = useAuth((s) => s.user?.email);
-  const isLoggedIn = !!userEmail;
+  const user = useAuth((s) => s.user);
+  const isLoggedIn = !!user;
   const { pathname } = useLocation();
+  const [activeFunnel, setActiveFunnel] = useState<'öğrenci' | 'koç' | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [pathname]);
+    // Show popup for guests after a short delay
+    if (isHydrated && !isLoggedIn && !activeFunnel) {
+      const timer = setTimeout(() => setShowPopup(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, isHydrated, isLoggedIn, activeFunnel]);
+  const handleRoleSelect = (role: 'öğrenci' | 'koç') => {
+    setActiveFunnel(role);
+    setShowPopup(false);
+  };
   if (!isHydrated) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 bg-playful-bg">
@@ -30,13 +44,28 @@ export function LandingPage() {
   }
   return (
     <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden animate-in fade-in duration-700">
-      <HeroSection />
+      <AnimatePresence>
+        {showPopup && (
+          <RoleSelectionPopup 
+            onSelect={handleRoleSelect} 
+            onClose={() => setShowPopup(false)} 
+          />
+        )}
+      </AnimatePresence>
+      <HeroSection funnel={activeFunnel} />
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection />
       </div>
-      {!isLoggedIn && <PracticeQuizPreview />}
+      {/* Dynamic Personalization Logic */}
+      {activeFunnel === 'koç' ? (
+        <CoachTeaser />
+      ) : (
+        <>
+          {!isLoggedIn && <PracticeQuizPreview funnel={activeFunnel} />}
+          <AIKocFeature />
+        </>
+      )}
       <PopularCoaches />
-      <AIKocFeature />
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
           <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-playful-dark">Neden KocFlow? 🤔</h2>
