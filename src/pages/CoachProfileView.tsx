@@ -3,9 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { ArrowLeft, Star, Users, CheckCircle2, TrendingUp, Award, Quote, Loader2, Sparkles, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Star, Users, CheckCircle2, TrendingUp, Award, Quote, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import type { CoachProfile } from '@shared/types';
+import type { CoachProfile, User } from '@shared/types';
 import { toast } from 'sonner';
 export function CoachProfileView() {
   const { id } = useParams();
@@ -14,20 +14,21 @@ export function CoachProfileView() {
   const userId = useAuth(s => s.user?.id);
   const userRole = useAuth(s => s.user?.role);
   const assignedCoachId = useAuth(s => s.user?.assignedCoachId);
+  const setUser = useAuth(s => s.setUser);
   const { data: coach, isLoading } = useQuery({
     queryKey: ['coach', id],
     queryFn: () => api<CoachProfile>(`/api/coaches/${id}`),
     enabled: !!id
   });
   const assignMutation = useMutation({
-    mutationFn: () => api('/api/coaches/assign', {
+    mutationFn: () => api<User>('/api/coaches/assign', {
       method: 'POST',
       body: JSON.stringify({ userId, coachId: id })
     }),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
       toast.success("Koç başarıyla atandı! Panele yönlendiriliyorsun.");
+      setUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
-      // In a real app, we'd update the local user state here
       setTimeout(() => navigate('/dashboard'), 1500);
     }
   });

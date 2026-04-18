@@ -9,6 +9,7 @@ interface AuthState {
   login: (req: LoginRequest) => Promise<void>;
   signup: (req: SignupRequest) => Promise<void>;
   logout: () => void;
+  setUser: (user: User) => void;
   setHydrated: (val: boolean) => void;
 }
 export const useAuth = create<AuthState>()(
@@ -33,6 +34,9 @@ export const useAuth = create<AuthState>()(
       },
       logout: () => {
         set({ user: null, token: null });
+      },
+      setUser: (user: User) => {
+        set({ user });
       },
       setHydrated: (val: boolean) => set({ isHydrated: val }),
     }),

@@ -7,7 +7,7 @@ import { useScores, useLeaderboard } from '@/hooks/use-tyt-api';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { Plus, Loader2, TrendingUp, Trophy, Calculator, GraduationCap, FileDown } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +30,11 @@ export function ProgressPage() {
     totalNet: 0
   };
   const calculateTYT = (s: Pick<DenemeScore, 'turkce' | 'matematik' | 'sosyal' | 'fen'>) => {
-    return Math.floor(100 + (s.turkce * 3.3) + (s.matematik * 3.3) + (s.sosyal * 3.4) + (s.fen * 3.4));
+    const t = s.turkce ?? 0;
+    const m = s.matematik ?? 0;
+    const soc = s.sosyal ?? 0;
+    const f = s.fen ?? 0;
+    return Math.floor(100 + (t * 3.3) + (m * 3.3) + (soc * 3.4) + (f * 3.4));
   };
   const handleAddScore = () => {
     if (!userId) return;
@@ -116,8 +120,15 @@ export function ProgressPage() {
                    <CartesianGrid strokeDasharray="5 5" vertical={false} />
                    <XAxis dataKey="formattedDate" />
                    <YAxis domain={[0, 120]} />
-                   <Tooltip />
-                   <Line type="monotone" dataKey="totalNet" stroke="#1e293b" strokeWidth={6} dot={{ r: 8, fill: '#1e293b' }} />
+                   <Tooltip contentStyle={{ borderRadius: '12px', border: '4px solid #1e293b' }} />
+                   <Line 
+                    type="monotone" 
+                    dataKey="totalNet" 
+                    stroke="#4ECDC4" 
+                    strokeWidth={8} 
+                    strokeLinecap="round"
+                    dot={{ r: 10, fill: '#1e293b', strokeWidth: 4, stroke: '#fff' }} 
+                   />
                  </LineChart>
                </ResponsiveContainer>
              ) : <div className="flex flex-col items-center justify-center h-full text-slate-300 font-bold"><TrendingUp className="w-12 h-12 mb-2" />Veri Bekleniyor</div>}
@@ -145,25 +156,29 @@ export function ProgressPage() {
           </div>
         </TabsContent>
         <TabsContent value="leaderboard" className="no-print">
-          <PlayfulCard className="bg-white p-0 overflow-hidden border-4">
+          <PlayfulCard className="p-0 overflow-hidden border-4">
             <div className="p-6 border-b-4 border-playful-dark bg-playful-yellow flex items-center justify-between">
               <h3 className="text-xl font-black flex items-center gap-2"><Trophy className="w-6 h-6" /> Küresel Sıralama</h3>
-              <span className="text-xs font-black uppercase">En Yüksek 100 Net Ortalaması</span>
+              <span className="text-xs font-black uppercase">En Yüksek 10 Ort. Net</span>
             </div>
-            <table className="w-full text-left">
-              <thead><tr className="border-b-4 border-playful-dark bg-slate-50"><th className="px-6 py-4 font-black">Sıra</th><th className="px-6 py-4 font-black">Öğrenci</th><th className="px-6 py-4 font-black">Ort. Net</th><th className="px-6 py-4 font-black">Seviye</th></tr></thead>
-              <tbody>
-                {lbLoading ? <tr><td colSpan={4} className="py-20 text-center"><Loader2 className="animate-spin mx-auto" /></td></tr> :
-                 leaderboard?.map((entry, idx) => (
-                  <tr key={idx} className={cn("border-b-2 border-slate-100 hover:bg-slate-50", idx < 3 && "bg-playful-teal/5")}>
-                    <td className="px-6 py-4 font-black text-xl">{idx + 1}.</td>
-                    <td className="px-6 py-4 font-bold">{entry.displayName}</td>
-                    <td className="px-6 py-4"><span className="px-3 py-1 bg-playful-dark text-white rounded-lg font-black">{entry.avgNet}</span></td>
-                    <td className="px-6 py-4"><span className="px-2 py-1 border-2 border-playful-dark rounded font-black text-xs uppercase bg-playful-yellow">Lvl {entry.level}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead><tr className="border-b-4 border-playful-dark bg-slate-50"><th className="px-6 py-4 font-black">Sıra</th><th className="px-6 py-4 font-black">Öğrenci</th><th className="px-6 py-4 font-black">Ort. Net</th><th className="px-6 py-4 font-black">Seviye</th></tr></thead>
+                <tbody>
+                  {lbLoading ? <tr><td colSpan={4} className="py-20 text-center"><Loader2 className="animate-spin mx-auto" /></td></tr> :
+                   leaderboard?.length ? leaderboard.map((entry, idx) => (
+                    <tr key={idx} className={cn("border-b-2 border-slate-100 hover:bg-slate-50", idx < 3 && "bg-playful-teal/5")}>
+                      <td className="px-6 py-4 font-black text-xl">{idx + 1}.</td>
+                      <td className="px-6 py-4 font-bold">{entry.displayName || 'Anonim Öğrenci'}</td>
+                      <td className="px-6 py-4"><span className="px-3 py-1 bg-playful-dark text-white rounded-lg font-black">{entry.avgNet}</span></td>
+                      <td className="px-6 py-4"><span className="px-2 py-1 border-2 border-playful-dark rounded font-black text-xs uppercase bg-playful-yellow">Lvl {entry.level}</span></td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan={4} className="py-20 text-center font-bold text-slate-300">Henüz sıralama verisi yok.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </PlayfulCard>
         </TabsContent>
       </Tabs>
