@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { TYTTask, DenemeScore, UserStats } from '@shared/types';
+import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry } from '@shared/types';
 export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -53,5 +53,27 @@ export function useStats(userId?: string) {
     queryKey: ['stats', userId],
     queryFn: () => api<UserStats>(`/api/stats${userId ? `?userId=${userId}` : ''}`),
     enabled: !!userId,
+  });
+}
+export function useRecommendations(userId?: string) {
+  return useQuery({
+    queryKey: ['recommendations', userId],
+    queryFn: () => api<Recommendation[]>(`/api/ai-tasks/${userId}`),
+    enabled: !!userId,
+  });
+}
+export function useLeaderboard() {
+  return useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: () => api<LeaderboardEntry[]>('/api/leaderboard'),
+  });
+}
+export function useCompletePomodoro(userId?: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api('/api/pomodoro/complete', { method: 'POST', body: JSON.stringify({ userId }) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stats', userId] });
+    },
   });
 }

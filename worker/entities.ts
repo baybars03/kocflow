@@ -8,14 +8,15 @@ export class UserEntity extends IndexedEntity<User> {
     id: "",
     email: "",
     role: "öğrenci",
-    coachAssignments: []
+    coachAssignments: [],
+    pomodoroSessions: 0
   };
   static seedData: User[] = [
-    { id: "demo-admin", email: "admin@kampus.com", role: "admin", coachAssignments: [] },
-    { id: "demo-koc", email: "koc@kampus.com", role: "koç", coachAssignments: ["demo-ogrenci-1"] },
-    { id: "demo-ogrenci-1", email: "ogrenci1@kampus.com", role: "öğrenci" },
-    { id: "demo-ogrenci-2", email: "ogrenci2@kampus.com", role: "öğrenci" },
-    { id: "demo-ogrenci-3", email: "ogrenci3@kampus.com", role: "öğrenci" },
+    { id: "demo-admin", email: "admin@kampus.com", role: "admin", coachAssignments: [], pomodoroSessions: 5 },
+    { id: "demo-koc", email: "koc@kampus.com", role: "koç", coachAssignments: ["demo-ogrenci-1"], pomodoroSessions: 12 },
+    { id: "demo-ogrenci-1", email: "ogrenci1@kampus.com", role: "öğrenci", pomodoroSessions: 24 },
+    { id: "demo-ogrenci-2", email: "ogrenci2@kampus.com", role: "öğrenci", pomodoroSessions: 8 },
+    { id: "demo-ogrenci-3", email: "ogrenci3@kampus.com", role: "öğrenci", pomodoroSessions: 0 },
   ];
 }
 export class TaskEntity extends IndexedEntity<TYTTask> {
@@ -29,10 +30,10 @@ export class TaskEntity extends IndexedEntity<TYTTask> {
     done: false,
     createdAt: 0
   };
-  static seedData = MOCK_TYT_TASKS.map(t => ({ 
-    ...t, 
-    userId: "demo-ogrenci-1", 
-    createdAt: Date.now() 
+  static seedData = MOCK_TYT_TASKS.map(t => ({
+    ...t,
+    userId: "demo-ogrenci-1",
+    createdAt: Date.now()
   }));
 }
 export class ScoreEntity extends IndexedEntity<DenemeScore> {
@@ -48,9 +49,9 @@ export class ScoreEntity extends IndexedEntity<DenemeScore> {
     fen: 0,
     totalNet: 0
   };
-  static seedData = MOCK_DENEME_SCORES.map(s => ({ 
-    ...s, 
-    id: crypto.randomUUID(), 
-    userId: "demo-ogrenci-1" 
+  static seedData = MOCK_DENEME_SCORES.map(s => ({
+    ...s,
+    id: crypto.randomUUID(),
+    userId: "demo-ogrenci-1"
   }));
 }

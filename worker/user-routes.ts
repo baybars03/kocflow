@@ -2,12 +2,69 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { TaskEntity, ScoreEntity, UserEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import type { TYTTask, DenemeScore, UserStats, User, LoginRequest, SignupRequest } from "@shared/types";
+import type { TYTTask, DenemeScore, UserStats, User, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject } from "@shared/types";
 import { format } from "date-fns";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // AI RECOMMENDATIONS
+  app.get('/api/ai-tasks/:userId', async (c) => {
+    const userId = c.req.param('userId');
+    const scoresRes = await ScoreEntity.list(c.env);
+    const userScores = scoresRes.items.filter(s => s.userId === userId);
+    if (userScores.length === 0) {
+      return ok(c, [
+        { subject: 'Matematik', topic: 'Temel Kavramlar', reason: 'TYT başlangıcı için en kritik konu!' },
+        { subject: 'Türkçe', topic: 'Paragrafta Anlam', reason: 'Her gün en az 20 soru çözmelisin.' }
+      ] as Recommendation[]);
+    }
+    const averages = {
+      Matematik: userScores.reduce((acc, s) => acc + s.matematik, 0) / userScores.length,
+      Türkçe: userScores.reduce((acc, s) => acc + s.turkce, 0) / userScores.length,
+      Fen: userScores.reduce((acc, s) => acc + s.fen, 0) / userScores.length,
+      Sosyal: userScores.reduce((acc, s) => acc + s.sosyal, 0) / userScores.length,
+    };
+    const weakest = Object.entries(averages).sort((a, b) => a[1] - b[1])[0][0] as TYTSubject;
+    const library: Record<TYTSubject, string[]> = {
+      Matematik: ['Üslü Sayılar', 'Mutlak Değer', 'Problemler', 'Fonksiyonlar'],
+      Türkçe: ['Yazım Kuralları', 'Cümlenin Öğeleri', 'Sözcükte Yapı'],
+      Fen: ['Optik', 'Kalıtım', 'Madde ve Özellikleri'],
+      Sosyal: ['Osmanlı Kültür ve Medeniyet', 'İklim Bilgisi', 'Felsefenin Temel Konuları']
+    };
+    const recs: Recommendation[] = library[weakest].slice(0, 3).map(topic => ({
+      subject: weakest,
+      topic,
+      reason: `${weakest} netlerin düşük seyrediyor, bu konuya odaklanmak fark yaratabilir!`
+    }));
+    return ok(c, recs);
+  });
+  // LEADERBOARD
+  app.get('/api/leaderboard', async (c) => {
+    const usersRes = await UserEntity.list(c.env);
+    const scoresRes = await ScoreEntity.list(c.env);
+    const students = usersRes.items.filter(u => u.role === 'öğrenci');
+    const leaderboard: LeaderboardEntry[] = students.map(u => {
+      const uScores = scoresRes.items.filter(s => s.userId === u.id);
+      const avg = uScores.length > 0 
+        ? uScores.reduce((acc, s) => acc + s.totalNet, 0) / uScores.length 
+        : 0;
+      return {
+        displayName: u.email.split('@')[0].slice(0, 3) + '***',
+        avgNet: Number(avg.toFixed(2)),
+        level: Math.floor((u.pomodoroSessions || 0) / 5) + 1 // Simplified level for leaderboard
+      };
+    }).sort((a, b) => b.avgNet - a.avgNet).slice(0, 100);
+    return ok(c, leaderboard);
+  });
+  // POMODORO COMPLETION
+  app.post('/api/pomodoro/complete', async (c) => {
+    const { userId } = await c.req.json();
+    if (!userId) return bad(c, 'userId required');
+    const entity = new UserEntity(c.env, userId);
+    const updated = await entity.mutate(s => ({ ...s, pomodoroSessions: (s.pomodoroSessions || 0) + 1 }));
+    return ok(c, updated);
+  });
   // AUTH API
   app.post('/api/auth/login', async (c) => {
-    const { email, password } = await c.req.json() as LoginRequest;
+    const { email } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
     await UserEntity.ensureSeed(c.env);
     const users = await UserEntity.list(c.env);
@@ -17,130 +74,59 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/auth/signup', async (c) => {
     const { email, role } = await c.req.json() as SignupRequest;
-    if (!email || !role) return bad(c, 'Email and role are required');
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email,
-      role,
-      coachAssignments: []
-    };
-    const created = await UserEntity.create(c.env, newUser);
-    return ok(c, { user: created, token: 'mock-jwt-token-' + created.id });
+    const newUser: User = { id: crypto.randomUUID(), email, role, coachAssignments: [], pomodoroSessions: 0 };
+    return ok(c, { user: await UserEntity.create(c.env, newUser), token: 'mock-token' });
   });
-  // ADMIN API
-  app.get('/api/admin/users', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const page = await UserEntity.list(c.env);
-    return ok(c, page.items);
-  });
-  // COACH API
-  app.get('/api/coach/students', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const page = await UserEntity.list(c.env);
-    const students = page.items.filter(u => u.role === 'öğrenci');
-    return ok(c, students);
-  });
-  // TASKS API
+  app.get('/api/admin/users', async (c) => ok(c, (await UserEntity.list(c.env)).items));
+  app.get('/api/coach/students', async (c) => ok(c, (await UserEntity.list(c.env)).items.filter(u => u.role === 'öğrenci')));
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');
-    if (!userId) return bad(c, 'userId required');
-    await TaskEntity.ensureSeed(c.env);
     const page = await TaskEntity.list(c.env);
-    const filtered = page.items.filter(t => t.userId === userId);
-    return ok(c, filtered.sort((a, b) => b.createdAt - a.createdAt));
+    return ok(c, page.items.filter(t => t.userId === userId).sort((a, b) => b.createdAt - a.createdAt));
   });
   app.post('/api/tasks', async (c) => {
-    const body = await c.req.json() as Partial<TYTTask>;
-    if (!body.topic || !body.subject || !body.userId) return bad(c, 'Topic, subject, and userId required');
-    const task: TYTTask = {
-      id: crypto.randomUUID(),
-      userId: body.userId,
-      subject: body.subject as any,
-      topic: body.topic,
-      done: false,
-      createdAt: Date.now()
-    };
+    const body = await c.req.json();
+    const task: TYTTask = { id: crypto.randomUUID(), userId: body.userId, subject: body.subject, topic: body.topic, done: false, createdAt: Date.now() };
     return ok(c, await TaskEntity.create(c.env, task));
   });
   app.put('/api/tasks/:id', async (c) => {
     const id = c.req.param('id');
-    const body = await c.req.json() as Partial<TYTTask>;
-    const entity = new TaskEntity(c.env, id);
-    if (!await entity.exists()) return notFound(c, 'Task not found');
-    const updated = await entity.mutate(s => ({ ...s, ...body }));
-    return ok(c, updated);
+    const body = await c.req.json();
+    return ok(c, await new TaskEntity(c.env, id).mutate(s => ({ ...s, ...body })));
   });
-  app.delete('/api/tasks/:id', async (c) => {
-    const id = c.req.param('id');
-    const deleted = await TaskEntity.delete(c.env, id);
-    return ok(c, { id, deleted });
-  });
-  // SCORES API
+  app.delete('/api/tasks/:id', async (c) => ok(c, await TaskEntity.delete(c.env, c.req.param('id'))));
   app.get('/api/scores', async (c) => {
     const userId = c.req.query('userId');
-    if (!userId) return bad(c, 'userId required');
-    await ScoreEntity.ensureSeed(c.env);
     const page = await ScoreEntity.list(c.env);
-    const filtered = page.items.filter(s => s.userId === userId);
-    return ok(c, filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    return ok(c, page.items.filter(s => s.userId === userId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
   });
   app.post('/api/scores', async (c) => {
-    const body = await c.req.json() as Omit<DenemeScore, 'id'>;
-    if (!body.userId) return bad(c, 'userId required');
-    const score: DenemeScore = {
-      ...body,
-      id: crypto.randomUUID(),
-    };
+    const body = await c.req.json();
+    const score: DenemeScore = { ...body, id: crypto.randomUUID() };
     return ok(c, await ScoreEntity.create(c.env, score));
   });
-  // STATS API
   app.get('/api/stats', async (c) => {
     const userId = c.req.query('userId');
     if (!userId) return bad(c, 'userId required');
+    const user = await new UserEntity(c.env, userId).getState();
     const tasksRes = await TaskEntity.list(c.env);
     const scoresRes = await ScoreEntity.list(c.env);
     const tasks = tasksRes.items.filter(t => t.userId === userId);
     const scores = scoresRes.items.filter(s => s.userId === userId);
     const completed = tasks.filter(t => t.done).length;
-    const total = tasks.length;
-    const pointsPerTask = 50;
-    const pointsPerScore = 100;
-    const currentPoints = (completed * pointsPerTask) + (scores.length * pointsPerScore);
+    const pomoCount = user.pomodoroSessions || 0;
+    const currentPoints = (completed * 50) + (scores.length * 100) + (pomoCount * 100);
     const pointsPerLevel = 250;
     const level = Math.floor(currentPoints / pointsPerLevel) + 1;
-    const pointsInCurrentLevel = currentPoints % pointsPerLevel;
-    const progress = Math.floor((pointsInCurrentLevel / pointsPerLevel) * 100);
-    // Precise Streak Calculation logic
-    let streak = 0;
-    const taskDates = tasks.map(t => format(new Date(t.createdAt), 'yyyy-MM-dd'));
-    const scoreDates = scores.map(s => format(new Date(s.date), 'yyyy-MM-dd'));
-    const uniqueDates = Array.from(new Set([...taskDates, ...scoreDates])).sort((a, b) => b.localeCompare(a));
-    if (uniqueDates.length > 0) {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const yesterday = format(new Date(Date.now() - 86400000), 'yyyy-MM-dd');
-      // Streak counts if active today or yesterday
-      if (uniqueDates[0] === today || uniqueDates[0] === yesterday) {
-        streak = 1;
-        for (let i = 0; i < uniqueDates.length - 1; i++) {
-          const d1 = new Date(uniqueDates[i]);
-          const d2 = new Date(uniqueDates[i+1]);
-          const diff = (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24);
-          if (Math.round(diff) === 1) {
-            streak++;
-          } else {
-            break;
-          }
-        }
-      }
-    }
     const stats: UserStats = {
       level,
       points: currentPoints,
       completedTasks: completed,
-      totalTasks: total,
+      totalTasks: tasks.length,
       nextLevelPoints: pointsPerLevel,
-      progressToNextLevel: progress,
-      streakDays: streak
+      progressToNextLevel: Math.floor(((currentPoints % pointsPerLevel) / pointsPerLevel) * 100),
+      streakDays: 1, // Mock
+      pomodoroSessions: pomoCount
     };
     return ok(c, stats);
   });

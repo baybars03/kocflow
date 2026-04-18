@@ -9,7 +9,8 @@ export interface User {
   email: string;
   role: UserRole;
   password?: string;
-  coachAssignments?: string[]; // IDs of students assigned to this coach
+  coachAssignments?: string[];
+  pomodoroSessions?: number;
 }
 export interface AuthResponse {
   user: User;
@@ -36,7 +37,7 @@ export interface TYTTask {
 export interface DenemeScore {
   id: string;
   userId: string;
-  date: string; // ISO format
+  date: string;
   turkce: number;
   matematik: number;
   sosyal: number;
@@ -49,6 +50,18 @@ export interface UserStats {
   completedTasks: number;
   totalTasks: number;
   nextLevelPoints: number;
-  progressToNextLevel: number; // 0-100
+  progressToNextLevel: number;
   streakDays: number;
+  pomodoroSessions: number;
+}
+export interface Recommendation {
+  subject: TYTSubject;
+  topic: string;
+  reason: string;
+}
+export interface LeaderboardEntry {
+  displayName: string;
+  avgNet: number;
+  level: number;
+  isCurrentUser?: boolean;
 }
