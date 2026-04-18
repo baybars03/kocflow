@@ -26,6 +26,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const created = await UserEntity.create(c.env, newUser);
     return ok(c, { user: created, token: 'mock-jwt-token-' + created.id });
   });
+  // ADMIN API
+  app.get('/api/admin/users', async (c) => {
+    await UserEntity.ensureSeed(c.env);
+    const page = await UserEntity.list(c.env);
+    return ok(c, page.items);
+  });
+  // COACH API
+  app.get('/api/coach/students', async (c) => {
+    await UserEntity.ensureSeed(c.env);
+    const page = await UserEntity.list(c.env);
+    // Mock: in a real app, we would filter by coach's assignments
+    // For demo, we return all students
+    const students = page.items.filter(u => u.role === 'öğrenci');
+    return ok(c, students);
+  });
   // TASKS API (Filtered by userId)
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');

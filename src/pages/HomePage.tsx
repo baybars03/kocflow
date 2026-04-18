@@ -1,22 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Calendar, Star, Zap, ChevronRight, Loader2, Flame, TrendingUp } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTasks, useStats, useScores } from '@/hooks/use-tyt-api';
 import { LevelProgress } from '@/components/ui/LevelProgress';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { differenceInDays } from 'date-fns';
 export function HomePage() {
+  const navigate = useNavigate();
+  const userId = useAuth((s) => s.user?.id);
+  const userRole = useAuth((s) => s.user?.role);
   const targetDate = new Date('2025-06-14');
   const remainingDays = differenceInDays(targetDate, new Date());
-  const { data: tasks, isLoading: tasksLoading } = useTasks();
-  const { data: stats, isLoading: statsLoading } = useStats();
-  const { data: scores } = useScores();
+  const { data: tasks, isLoading: tasksLoading } = useTasks(userId);
+  const { data: stats } = useStats(userId);
+  const { data: scores } = useScores(userId);
+  useEffect(() => {
+    if (userRole === 'koç') {
+      navigate('/coach');
+    } else if (userRole === 'admin') {
+      navigate('/admin');
+    }
+  }, [userRole, navigate]);
   const dailyTasks = tasks?.slice(0, 3) || [];
-  const avgNet = scores && scores.length > 0 
+  const avgNet = scores && scores.length > 0
     ? (scores.reduce((acc, s) => acc + s.totalNet, 0) / scores.length).toFixed(1)
     : '0';
+  if (userRole !== 'öğrenci') {
+    return (
+      <div className="flex items-center justify-center p-20">
+        <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
+      </div>
+    );
+  }
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
@@ -28,7 +46,7 @@ export function HomePage() {
             TYT hazırlıkların harika gidiyor. Hadi bugünü fethedelim!
           </p>
         </div>
-        <PlayfulCard className="bg-playful-red text-white flex flex-col items-center py-4 px-10 shrink-0">
+        <PlayfulCard className="bg-playful-red text-white flex flex-col items-center py-4 px-10 shrink-0 border-playful-dark shadow-playful">
           <span className="text-sm font-bold uppercase tracking-widest">TYT'ye Kalan</span>
           <span className="text-5xl font-black">{remainingDays > 0 ? remainingDays : 0}</span>
           <span className="text-sm font-bold uppercase tracking-widest">Gün</span>
@@ -63,9 +81,9 @@ export function HomePage() {
                 </div>
               </div>
             </div>
-            <LevelProgress 
-              value={stats?.progressToNextLevel || 0} 
-              label={`${stats?.points || 0} Toplam Puan`} 
+            <LevelProgress
+              value={stats?.progressToNextLevel || 0}
+              label={`${stats?.points || 0} Toplam Puan`}
             />
           </PlayfulCard>
         </div>
@@ -102,7 +120,7 @@ export function HomePage() {
         ) : dailyTasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {dailyTasks.map((task) => (
-              <PlayfulCard key={task.id} className="flex flex-col gap-2 p-4 md:p-6 group">
+              <PlayfulCard key={task.id} className="flex flex-col gap-2 p-4 md:p-6 group hover:border-playful-red">
                 <span className={cn(
                   "w-fit px-3 py-1 rounded-full text-xs font-black uppercase border-2 border-playful-dark",
                   SUBJECT_COLORS[task.subject]
@@ -112,7 +130,7 @@ export function HomePage() {
                 <h4 className="text-lg font-bold group-hover:underline">{task.topic}</h4>
                 <div className="flex items-center gap-2 mt-auto">
                   <div className={cn(
-                    "w-4 h-4 rounded border-2 border-playful-dark",
+                    "w-4 h-4 rounded border-2 border-playful-dark transition-colors",
                     task.done ? "bg-playful-teal" : "bg-white"
                   )} />
                   <span className="text-sm font-bold">{task.done ? 'Tamamlandı' : 'Bekliyor'}</span>
@@ -121,7 +139,7 @@ export function HomePage() {
             ))}
           </div>
         ) : (
-          <PlayfulCard className="bg-white text-center py-10 border-dashed">
+          <PlayfulCard className="bg-white text-center py-10 border-dashed border-4 border-slate-200 shadow-none hover:shadow-none">
             <p className="font-bold text-muted-foreground italic">Henüz bir görevin yok. Yeni bir tane eklemeye ne dersin? ✨</p>
           </PlayfulCard>
         )}

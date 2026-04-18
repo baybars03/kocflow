@@ -16,9 +16,18 @@ import { TasksPage } from '@/pages/TasksPage'
 import { ProgressPage } from '@/pages/ProgressPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { SignupPage } from '@/pages/SignupPage'
+import { CoachDashboard } from '@/pages/CoachDashboard'
+import { AdminDashboard } from '@/pages/AdminDashboard'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 const router = createBrowserRouter([
   {
     path: "/login",
@@ -53,6 +62,24 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['öğrenci']}>
         <PlayfulLayout><ProgressPage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/coach",
+    element: (
+      <ProtectedRoute allowedRoles={['koç', 'admin']}>
+        <PlayfulLayout><CoachDashboard /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={['admin']}>
+        <PlayfulLayout><AdminDashboard /></PlayfulLayout>
       </ProtectedRoute>
     ),
     errorElement: <RouteErrorBoundary />,

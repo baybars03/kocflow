@@ -15,13 +15,13 @@ import { tr } from 'date-fns/locale';
 import { useScores } from '@/hooks/use-tyt-api';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
-import { Plus, Loader2, Award, Info, TrendingUp } from 'lucide-react';
+import { Plus, Loader2, Info, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 export function ProgressPage() {
-  const user = useAuth((s) => s.user);
-  const { data: scores, isLoading, createScore } = useScores(user?.id);
+  const userId = useAuth((s) => s.user?.id);
+  const { data: scores, isLoading, createScore } = useScores(userId);
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({ turkce: 0, matematik: 0, sosyal: 0, fen: 0 });
   const chartData = (scores || []).map(score => ({
@@ -32,14 +32,14 @@ export function ProgressPage() {
     ? scores[scores.length - 1]
     : { turkce: 0, matematik: 0, sosyal: 0, fen: 0, totalNet: 0 };
   const getAvg = (key: 'turkce' | 'matematik' | 'sosyal' | 'fen') => {
-    if (!scores || scores.length === 0) return 0;
+    if (!scores || scores.length === 0) return '0';
     return (scores.reduce((acc, s) => acc + s[key], 0) / scores.length).toFixed(1);
   };
   const handleAddScore = () => {
-    if (!user) return;
+    if (!userId) return;
     const totalNet = Number(form.turkce) + Number(form.matematik) + Number(form.sosyal) + Number(form.fen);
     createScore.mutate({
-      userId: user.id,
+      userId,
       date: new Date().toISOString(),
       ...form,
       totalNet
@@ -102,7 +102,7 @@ export function ProgressPage() {
           { label: 'Sosyal', value: latestScore.sosyal, avg: getAvg('sosyal'), color: 'bg-playful-yellow' },
           { label: 'Fen', value: latestScore.fen, avg: getAvg('fen'), color: 'bg-green-400' },
         ].map((item) => (
-          <PlayfulCard key={item.label} className="flex flex-col items-center py-6 group relative">
+          <PlayfulCard key={item.label} className="flex flex-col items-center py-6 group relative border-playful-dark shadow-playful">
             <div className={cn("absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-playful-dark", item.color)} />
             <span className="text-xs font-black uppercase text-muted-foreground mb-1">{item.label}</span>
             <span className="text-4xl font-black text-playful-dark">{item.value}</span>
@@ -110,7 +110,7 @@ export function ProgressPage() {
           </PlayfulCard>
         ))}
       </div>
-      <PlayfulCard className="p-4 md:p-8 min-h-[450px] bg-white">
+      <PlayfulCard className="p-4 md:p-8 min-h-[450px] bg-white border-playful-dark shadow-playful">
         {isLoading ? (
           <div className="flex items-center justify-center h-[350px]">
             <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />

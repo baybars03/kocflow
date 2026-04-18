@@ -1,51 +1,57 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import type { TYTTask, DenemeScore, UserStats } from '@shared/types';
-export function useTasks() {
+export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['tasks'],
-    queryFn: () => api<TYTTask[]>('/api/tasks'),
+    queryKey: ['tasks', userId],
+    queryFn: () => api<TYTTask[]>(`/api/tasks${userId ? `?userId=${userId}` : ''}`),
+    enabled: !!userId,
   });
   const createMutation = useMutation({
     mutationFn: (task: Partial<TYTTask>) => api<TYTTask>('/api/tasks', { method: 'POST', body: JSON.stringify(task) }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
+      queryClient.invalidateQueries({ queryKey: ['stats', userId] });
     },
   });
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...updates }: Partial<TYTTask> & { id: string }) => 
+    mutationFn: ({ id, ...updates }: Partial<TYTTask> & { id: string }) =>
       api<TYTTask>(`/api/tasks/${id}`, { method: 'PUT', body: JSON.stringify(updates) }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
+      queryClient.invalidateQueries({ queryKey: ['stats', userId] });
     },
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api<{ id: string }>(`/api/tasks/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', userId] });
+      queryClient.invalidateQueries({ queryKey: ['stats', userId] });
     },
   });
   return { ...query, createTask: createMutation, updateTask: updateMutation, deleteTask: deleteMutation };
 }
-export function useScores() {
+export function useScores(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['scores'],
-    queryFn: () => api<DenemeScore[]>('/api/scores'),
+    queryKey: ['scores', userId],
+    queryFn: () => api<DenemeScore[]>(`/api/scores${userId ? `?userId=${userId}` : ''}`),
+    enabled: !!userId,
   });
   const createMutation = useMutation({
     mutationFn: (score: Omit<DenemeScore, 'id'>) => api<DenemeScore>('/api/scores', { method: 'POST', body: JSON.stringify(score) }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scores'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scores', userId] });
+      queryClient.invalidateQueries({ queryKey: ['stats', userId] });
+    },
   });
   return { ...query, createScore: createMutation };
 }
-export function useStats() {
+export function useStats(userId?: string) {
   return useQuery({
-    queryKey: ['stats'],
-    queryFn: () => api<UserStats>('/api/stats'),
+    queryKey: ['stats', userId],
+    queryFn: () => api<UserStats>(`/api/stats${userId ? `?userId=${userId}` : ''}`),
+    enabled: !!userId,
   });
 }

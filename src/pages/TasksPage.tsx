@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { SUBJECT_COLORS } from '@shared/mock-tyt-data';
-import { Plus, Check, Loader2, Trash2, ClipboardList, Sparkles } from 'lucide-react';
+import { Plus, Check, Loader2, Trash2, ClipboardList } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -14,14 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import type { TYTSubject } from '@shared/types';
 export function TasksPage() {
-  const user = useAuth((s) => s.user);
-  const { data: tasks, isLoading, updateTask, createTask, deleteTask } = useTasks(user?.id);
-  const { data: stats } = useStats(user?.id);
+  const userId = useAuth((s) => s.user?.id);
+  const { data: tasks, isLoading, updateTask, createTask, deleteTask } = useTasks(userId);
+  const { data: stats } = useStats(userId);
   const [newTopic, setNewTopic] = useState('');
   const [newSubject, setNewSubject] = useState<TYTSubject>('Matematik');
   const [isOpen, setIsOpen] = useState(false);
   const [prevLevel, setPrevLevel] = useState<number | null>(null);
-  // Monitor level up
   useEffect(() => {
     if (stats?.level) {
       if (prevLevel !== null && stats.level > prevLevel) {
@@ -55,8 +54,8 @@ export function TasksPage() {
     });
   };
   const handleCreate = () => {
-    if (!newTopic.trim() || !user) return;
-    createTask.mutate({ topic: newTopic, subject: newSubject, userId: user.id }, {
+    if (!newTopic.trim() || !userId) return;
+    createTask.mutate({ topic: newTopic, subject: newSubject, userId }, {
       onSuccess: () => {
         setNewTopic('');
         setIsOpen(false);

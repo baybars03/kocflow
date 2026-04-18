@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ClipboardList, TrendingUp, LogOut, User as UserIcon } from 'lucide-react';
+import { Home, ClipboardList, TrendingUp, LogOut, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 interface PlayfulLayoutProps {
@@ -9,33 +9,52 @@ interface PlayfulLayoutProps {
 export function PlayfulLayout({ children }: PlayfulLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = useAuth((s) => s.user);
+  const userRole = useAuth((s) => s.user?.role);
   const logout = useAuth((s) => s.logout);
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-  const navItems = user?.role === 'öğrenci' ? [
-    { label: 'Kampüs', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
-    { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red' },
-    { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow' },
-  ] : [
-    { label: 'Ana Sayfa', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
-  ];
+  const getNavItems = () => {
+    if (userRole === 'öğrenci') {
+      return [
+        { label: 'Kampüs', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red' },
+        { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow' },
+      ];
+    }
+    if (userRole === 'koç') {
+      return [
+        { label: 'Panel', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Öğrencilerim', path: '/coach', icon: Users, color: 'hover:bg-playful-red' },
+      ];
+    }
+    if (userRole === 'admin') {
+      return [
+        { label: 'Panel', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Yönetim', path: '/admin', icon: Settings, color: 'hover:bg-playful-yellow' },
+      ];
+    }
+    return [];
+  };
+  const navItems = getNavItems();
   return (
     <div className="min-h-screen bg-playful-bg">
       <nav className="sticky top-0 z-50 bg-white border-b-4 border-playful-dark px-4 py-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/" className="text-2xl font-black text-playful-dark flex items-center gap-2">
-              <div className="w-8 h-8 bg-playful-red border-2 border-playful-dark rounded-lg flex items-center justify-center text-white">
+              <div className="w-10 h-10 bg-playful-red border-4 border-playful-dark rounded-xl flex items-center justify-center text-white shadow-playful hover:scale-105 transition-transform">
                 T
               </div>
-              <span className="hidden sm:inline">TYT KAMPÜS</span>
+              <span className="hidden sm:inline tracking-tighter">TYT KAMPÜS</span>
             </Link>
-            {user && (
-              <span className="px-2 py-0.5 bg-playful-dark text-white text-[10px] font-black rounded uppercase border-2 border-playful-dark">
-                {user.role}
+            {userRole && (
+              <span className={cn(
+                "px-2 py-0.5 text-[10px] font-black rounded uppercase border-2 border-playful-dark",
+                userRole === 'öğrenci' ? "bg-playful-teal text-white" : userRole === 'koç' ? "bg-playful-yellow text-playful-dark" : "bg-playful-dark text-white"
+              )}>
+                {userRole}
               </span>
             )}
           </div>
@@ -47,7 +66,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-transparent font-bold transition-all",
                   location.pathname === item.path
-                    ? "bg-playful-dark text-white border-playful-dark shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]"
+                    ? "bg-playful-dark text-white border-playful-dark shadow-playful"
                     : cn("text-playful-dark", item.color)
                 )}
               >
@@ -73,7 +92,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
             </div>
             <button
               onClick={handleLogout}
-              className="p-2 md:px-4 md:py-2 rounded-xl border-2 border-playful-dark bg-white font-bold text-playful-dark hover:bg-playful-red hover:text-white transition-all flex items-center gap-2"
+              className="p-2 md:px-4 md:py-2 rounded-xl border-2 border-playful-dark bg-white font-bold text-playful-dark hover:bg-playful-red hover:text-white transition-all flex items-center gap-2 shadow-playful active:shadow-none active:translate-y-1"
             >
               <LogOut className="w-5 h-5" strokeWidth={3} />
               <span className="hidden md:inline">Çıkış</span>
