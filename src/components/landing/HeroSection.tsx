@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Rocket, Zap, AlarmClock, GraduationCap, ArrowRight } from 'lucide-react';
+import { Rocket, Zap, AlarmClock, GraduationCap, ArrowRight, UserPlus } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
 import { TARGET_DATE } from '@shared/mock-tyt-data';
@@ -19,14 +19,14 @@ export function HeroSection() {
     return "Öğrenci Akışını";
   };
   const getPrimaryCTA = () => {
-    if (!isLoggedIn) return { label: "KocFlow'a Katıl!", path: "/signup?role=öğrenci", icon: Rocket };
+    if (!isLoggedIn) return { label: "Öğrenci Olarak Başla", path: "/signup?role=öğrenci", icon: Rocket };
     if (userRole === 'koç') return { label: "Panele Dön", path: "/coach", icon: ArrowRight };
     if (userRole === 'admin') return { label: "Yönetime Git", path: "/admin", icon: Zap };
     return { label: "Akışına Dön", path: "/dashboard", icon: ArrowRight };
   };
   const getSecondaryCTA = () => {
-    if (!isLoggedIn || userRole === 'öğrenci') return { label: "Koçları İncele", path: "/marketplace", icon: Zap };
-    return { label: "Öğrenci Yönetimi", path: "/coach", icon: GraduationCap };
+    if (!isLoggedIn) return { label: "Koç Olarak Katıl", path: "/signup?role=koç", icon: UserPlus };
+    return { label: "Marketplace", path: "/marketplace", icon: Zap };
   };
   const primaryCTA = getPrimaryCTA();
   const secondaryCTA = getSecondaryCTA();

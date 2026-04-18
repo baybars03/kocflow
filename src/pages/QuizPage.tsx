@@ -34,9 +34,10 @@ export function QuizPage() {
     MOCK_QUESTIONS.forEach((q, i) => {
       if (finalAnswers[i] === q.correct) correctCount++;
     });
+    const currentTimeLeft = timeLeft;
     const timeSpent = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-      : INITIAL_TIME - timeLeft;
+      : INITIAL_TIME - currentTimeLeft;
     const results: QuizResult = {
       score: Math.floor((correctCount / MOCK_QUESTIONS.length) * 100),
       nets: correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25,
@@ -70,11 +71,11 @@ export function QuizPage() {
     let timer: any;
     if (step === 'active' && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft(t => t - 1);
+        setTimeLeft(t => Math.max(0, t - 1));
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [step, timeLeft > 0]);
+  }, [step, timeLeft]);
   useEffect(() => {
     if (timeLeft === 0 && step === 'active' && !isSubmitting) {
       handleSubmit(answers);

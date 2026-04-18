@@ -7,15 +7,11 @@ import { PopularCoaches } from '@/components/landing/PopularCoaches';
 import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
 import { AIKocFeature } from '@/components/landing/AIKocFeature';
-import { StudentLandingTeaser } from '@/components/landing/StudentLandingTeaser';
-import { CoachLandingTeaser } from '@/components/landing/CoachLandingTeaser';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Link } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 export function LandingPage() {
   const isHydrated = useAuth((s) => s.isHydrated);
-  const userRole = useAuth((s) => s.user?.role);
   const userEmail = useAuth((s) => s.user?.email);
   const isLoggedIn = !!userEmail;
   if (!isHydrated) {
@@ -28,28 +24,6 @@ export function LandingPage() {
   return (
     <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden">
       <HeroSection />
-      <AnimatePresence mode="wait">
-        {isLoggedIn && userRole === 'öğrenci' && (
-          <motion.div
-            key="student-teaser"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <StudentLandingTeaser />
-          </motion.div>
-        )}
-        {isLoggedIn && userRole === 'koç' && (
-          <motion.div
-            key="coach-teaser"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <CoachLandingTeaser />
-          </motion.div>
-        )}
-      </AnimatePresence>
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection />
       </div>

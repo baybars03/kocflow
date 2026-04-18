@@ -23,8 +23,19 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login({ email: loginEmail, password: loginPassword });
+      // We get the updated state after login from the store because the store update is awaited inside login()
+      const state = useAuth.getState();
+      const role = state.user?.role;
       toast.success('KocFlow\'a giriş yapıldı! Akış başlıyor. 🚀');
-      navigate('/');
+      if (role === 'öğrenci') {
+        navigate('/dashboard');
+      } else if (role === 'koç') {
+        navigate('/coach');
+      } else if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       toast.error('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
     } finally {
