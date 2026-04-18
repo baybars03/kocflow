@@ -113,9 +113,9 @@ export function HeroSection({ funnel }: HeroSectionProps) {
               className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
             />
             <div className="absolute inset-0 bg-playful-dark/10 flex items-center justify-center">
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.1 }}
-                whileActive={{ scale: 0.9 }}
+                whileTap={{ scale: 0.9 }}
                 className="w-24 h-24 bg-white border-4 border-playful-dark rounded-full flex items-center justify-center shadow-playful text-playful-red group-hover:bg-playful-red group-hover:text-white transition-colors"
               >
                 <Play className="w-10 h-10 fill-current ml-2" />

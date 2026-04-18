@@ -22,13 +22,19 @@ export function LandingPage() {
   const [showPopup, setShowPopup] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Show popup for guests after a short delay
-    if (isHydrated && !isLoggedIn && !activeFunnel) {
-      const timer = setTimeout(() => setShowPopup(true), 1500);
+    
+    // Check for persisted preference
+    const savedFunnel = localStorage.getItem('kocflow-funnel-pref') as 'öğrenci' | 'koç' | null;
+    if (savedFunnel) {
+      setActiveFunnel(savedFunnel);
+    } else if (isHydrated && !isLoggedIn && !activeFunnel) {
+      // Show popup for guests after a short delay if no preference exists
+      const timer = setTimeout(() => setShowPopup(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [pathname, isHydrated, isLoggedIn, activeFunnel]);
+  }, [pathname, isHydrated, isLoggedIn]);
   const handleRoleSelect = (role: 'öğrenci' | 'koç') => {
+    localStorage.setItem('kocflow-funnel-pref', role);
     setActiveFunnel(role);
     setShowPopup(false);
   };

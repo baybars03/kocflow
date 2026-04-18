@@ -4,7 +4,6 @@ import { useNotifications } from '@/hooks/use-tyt-api';
 import { useAuth } from '@/hooks/use-auth';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Popover,
   PopoverContent,
@@ -28,18 +27,11 @@ export function NotificationTray() {
       <PopoverTrigger asChild>
         <button className="relative p-2 rounded-xl border-2 border-playful-dark bg-white shadow-playful-active hover:-translate-y-0.5 transition-all">
           <Bell className="w-5 h-5 text-playful-dark" strokeWidth={3} />
-          <AnimatePresence>
-            {unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-playful-red text-white border-2 border-playful-dark rounded-full text-[10px] font-black flex items-center justify-center animate-bounce"
-              >
-                {unreadCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-playful-red text-white border-2 border-playful-dark rounded-full text-[10px] font-black flex items-center justify-center animate-bounce">
+              {unreadCount}
+            </span>
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0 border-4 border-playful-dark rounded-[1.5rem] shadow-playful bg-white z-[100] mr-4">
@@ -54,8 +46,8 @@ export function NotificationTray() {
         <div className="max-h-[400px] overflow-y-auto">
           {notifications && notifications.length > 0 ? (
             notifications.map((n) => (
-              <div
-                key={n.id}
+              <div 
+                key={n.id} 
                 className={cn(
                   "p-4 border-b-2 border-slate-100 flex gap-3 transition-colors",
                   !n.read ? "bg-playful-yellow/5" : "opacity-60"
@@ -72,14 +64,12 @@ export function NotificationTray() {
                   </p>
                 </div>
                 {!n.read && (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                  <button 
                     onClick={() => markAsRead.mutate(n.id)}
                     className="flex-shrink-0 self-center p-1 hover:bg-playful-teal hover:text-white rounded border border-slate-200 transition-colors"
                   >
                     <Check className="w-3 h-3" />
-                  </motion.button>
+                  </button>
                 )}
               </div>
             ))

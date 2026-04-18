@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown } from 'lucide-react';
+import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown, MessageCircle } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS, TARGET_DATE } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ export function HomePage() {
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
   const userEmail = useAuth((s) => s.user?.email);
+  const assignedCoachId = useAuth((s) => s.user?.assignedCoachId);
   const now = new Date();
   const examPassed = isAfter(now, TARGET_DATE);
   const rawDays = differenceInDays(TARGET_DATE, now);
@@ -141,6 +142,21 @@ export function HomePage() {
               label={`${stats?.points || 0} TOPLAM PUAN`}
             />
           </PlayfulCard>
+          
+          {assignedCoachId && (
+            <PlayfulCard className="bg-playful-teal text-white flex flex-col md:flex-row items-center justify-between gap-6 border-playful-dark shadow-playful no-print">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-white text-playful-teal rounded-2xl border-2 border-playful-dark">
+                  <MessageCircle className="w-8 h-8 fill-current" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black">Koçuna Bir Soru Sor!</h3>
+                  <p className="font-bold text-white/80">Sana özel çalışma programın hazır.</p>
+                </div>
+              </div>
+              <button onClick={() => navigate('/profile')} className="playful-button bg-white text-playful-teal py-3 px-8 text-sm">Mesaj At</button>
+            </PlayfulCard>
+          )}
         </div>
         <div className="lg:col-span-4 space-y-6">
           <PlayfulCard className="bg-playful-yellow text-playful-dark flex flex-col items-center justify-center py-10 md:py-14 border-playful-dark shadow-playful print-section">

@@ -4,11 +4,13 @@ import { Home, ClipboardList, TrendingUp, LogOut, HelpCircle, ShoppingBag, LogIn
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import {
+  User,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NotificationTray } from './NotificationTray';
 interface PlayfulLayoutProps {
   children: React.ReactNode;
 }
@@ -36,18 +38,21 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
         { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
         { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
         { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow', activeColor: 'bg-playful-yellow text-playful-dark' },
+        { label: 'Profil', path: '/profile', icon: User, color: 'hover:bg-slate-200', activeColor: 'bg-slate-200 text-playful-dark' },
       ];
     }
     if (userRole === 'koç') {
       return [
         { label: 'Panel', path: '/coach', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
         { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
+        { label: 'Profil', path: '/profile', icon: User, color: 'hover:bg-slate-200', activeColor: 'bg-slate-200 text-playful-dark' },
       ];
     }
     if (userRole === 'admin') {
       return [
         { label: 'Panel', path: '/admin', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal' },
         { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red' },
+        { label: 'Profil', path: '/profile', icon: User, color: 'hover:bg-slate-200', activeColor: 'bg-slate-200 text-playful-dark' },
       ];
     }
     return [];
@@ -113,6 +118,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
             ))}
           </div>
           <div className="flex items-center gap-2">
+            {isLoggedIn && <NotificationTray />}
             {!isLoggedIn ? (
               <div className="flex gap-2">
                 <Link to="/login" className="px-4 py-2 border-2 border-playful-dark rounded-xl font-black hover:bg-slate-50 transition-colors flex items-center gap-2">

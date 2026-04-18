@@ -22,6 +22,7 @@ import { SignupPage } from '@/pages/SignupPage'
 import { CoachDashboard } from '@/pages/CoachDashboard'
 import { CoachStudentDetail } from '@/pages/CoachStudentDetail'
 import { AdminDashboard } from '@/pages/AdminDashboard'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { QuizPage } from '@/pages/QuizPage'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -87,6 +88,15 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['öğrenci']}>
         <PlayfulLayout><ProgressPage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/profile",
+    element: (
+      <ProtectedRoute allowedRoles={['öğrenci', 'koç', 'admin']}>
+        <PlayfulLayout><ProfilePage /></PlayfulLayout>
       </ProtectedRoute>
     ),
     errorElement: <RouteErrorBoundary />,
