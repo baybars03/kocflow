@@ -15,6 +15,10 @@ export function LoginPage() {
     if (e) e.preventDefault();
     const loginEmail = directEmail || email;
     if (!loginEmail) return;
+    // Visually sync the input if a direct email was provided
+    if (directEmail) {
+      setEmail(directEmail);
+    }
     setLoading(true);
     try {
       await login({ email: loginEmail });
@@ -42,7 +46,7 @@ export function LoginPage() {
             <h1 className="text-3xl font-black text-playful-dark">Tekrar Hoş Geldin!</h1>
             <p className="font-bold text-muted-foreground">Kampüse giriş yap ve çalışmaya başla.</p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={(e) => handleSubmit(e)} className="space-y-6">
             <div className="space-y-2">
               <label className="font-bold text-playful-dark">E-posta Adresi</label>
               <Input

@@ -119,17 +119,17 @@ export function ProgressPage() {
           <div className="h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="formattedDate" tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
-                <YAxis domain={[0, 120]} tick={{ fontWeight: 'bold', fill: '#1e293b', fontSize: 12 }} axisLine={{ strokeWidth: 3 }} />
+                <CartesianGrid strokeDasharray="6 6" vertical={false} stroke="#CBD5E1" />
+                <XAxis dataKey="formattedDate" tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} axisLine={{ stroke: '#1e293b', strokeWidth: 4 }} />
+                <YAxis domain={[0, 120]} tick={{ fontWeight: 'black', fill: '#1e293b', fontSize: 12 }} axisLine={{ stroke: '#1e293b', strokeWidth: 4 }} />
                 <Tooltip
                   contentStyle={{ borderRadius: '1.5rem', border: '4px solid #1e293b', boxShadow: '6px 6px 0px 0px rgba(30,41,59,1)', fontWeight: 'bold' }}
-                  cursor={{ stroke: '#1e293b', strokeWidth: 2, strokeDasharray: '5 5' }}
+                  cursor={{ stroke: '#1e293b', strokeWidth: 4, strokeDasharray: '0' }}
                 />
                 <Legend verticalAlign="top" height={48} iconType="circle" />
-                <Line name="Toplam Net" type="stepAfter" dataKey="totalNet" stroke="#1e293b" strokeWidth={5} dot={{ r: 8, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} />
-                <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={3} dot={false} />
-                <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={3} dot={false} />
+                <Line name="Toplam Net" type="stepAfter" dataKey="totalNet" stroke="#1e293b" strokeWidth={6} dot={{ r: 8, fill: '#1e293b', strokeWidth: 3, stroke: '#fff' }} activeDot={{ r: 10, strokeWidth: 0 }} />
+                <Line name="Türkçe" type="monotone" dataKey="turkce" stroke="#FF6B6B" strokeWidth={4} dot={false} />
+                <Line name="Matematik" type="monotone" dataKey="matematik" stroke="#4ECDC4" strokeWidth={4} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

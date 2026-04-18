@@ -22,20 +22,25 @@ export function TasksPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [prevLevel, setPrevLevel] = useState<number | null>(null);
   useEffect(() => {
-    if (stats?.level) {
+    if (stats?.level !== undefined) {
       if (prevLevel !== null && stats.level > prevLevel) {
-        toast.success(`TEBRİKLER! Seviye Atladın: Seviye ${stats.level} 🚀`, {
-          description: "Çalışmalarının karşılığını alıyorsun, böyle devam!",
-          duration: 5000,
-        });
-        confetti({
-          particleCount: 150,
-          spread: 100,
-          origin: { y: 0.5 },
-          colors: ['#FF6B6B', '#4ECDC4', '#FFE66D']
-        });
+        // Delay to allow task completion toast to appear first
+        setTimeout(() => {
+          toast.success(`TEBRİKLER! Seviye Atladın: Seviye ${stats.level} 🚀`, {
+            description: "Çalışmalarının karşılığını alıyorsun, böyle devam!",
+            duration: 5000,
+          });
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.5 },
+            colors: ['#FF6B6B', '#4ECDC4', '#FFE66D']
+          });
+        }, 1000);
       }
-      setPrevLevel(stats.level);
+      if (stats.level !== prevLevel) {
+        setPrevLevel(stats.level);
+      }
     }
   }, [stats?.level, prevLevel]);
   const handleToggle = (id: string, currentDone: boolean) => {

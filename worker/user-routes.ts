@@ -36,12 +36,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/coach/students', async (c) => {
     await UserEntity.ensureSeed(c.env);
     const page = await UserEntity.list(c.env);
-    // Mock: in a real app, we would filter by coach's assignments
-    // For demo, we return all students
     const students = page.items.filter(u => u.role === 'öğrenci');
     return ok(c, students);
   });
-  // TASKS API (Filtered by userId)
+  // TASKS API
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');
     if (!userId) return bad(c, 'userId required');
@@ -76,7 +74,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const deleted = await TaskEntity.delete(c.env, id);
     return ok(c, { id, deleted });
   });
-  // SCORES API (Filtered by userId)
+  // SCORES API
   app.get('/api/scores', async (c) => {
     const userId = c.req.query('userId');
     if (!userId) return bad(c, 'userId required');
@@ -94,7 +92,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, await ScoreEntity.create(c.env, score));
   });
-  // STATS API (Filtered by userId)
+  // STATS API - Refined Logic
   app.get('/api/stats', async (c) => {
     const userId = c.req.query('userId');
     if (!userId) return bad(c, 'userId required');
@@ -111,9 +109,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const level = Math.floor(currentPoints / pointsPerLevel) + 1;
     const pointsInCurrentLevel = currentPoints % pointsPerLevel;
     const progress = Math.floor((pointsInCurrentLevel / pointsPerLevel) * 100);
-    const lastActivityTs = tasks.length > 0 ? Math.max(...tasks.map(t => t.createdAt)) : Date.now();
-    const daysSinceLastActivity = Math.floor((Date.now() - lastActivityTs) / (1000 * 60 * 60 * 24));
-    const streak = daysSinceLastActivity < 2 ? (completed > 0 ? Math.min(completed, 7) : 1) : 0;
+    // Improved streak calculation
+    let streak = 0;
+    if (completed > 0 || scores.length > 0) {
+      const taskTimes = tasks.map(t => t.createdAt);
+      const scoreTimes = scores.map(s => new Date(s.date).getTime());
+      const allTimes = [...taskTimes, ...scoreTimes];
+      const lastActivityTs = allTimes.length > 0 ? Math.max(...allTimes) : 0;
+      const daysSinceLastActivity = lastActivityTs > 0 
+        ? Math.floor((Date.now() - lastActivityTs) / (1000 * 60 * 60 * 24))
+        : 99;
+      // If active in last 2 days, calculate a mock streak based on engagement
+      if (daysSinceLastActivity < 2) {
+        streak = Math.max(1, Math.min(Math.floor(completed / 2) + scores.length, 7));
+      }
+    }
     const stats: UserStats = {
       level,
       points: currentPoints,

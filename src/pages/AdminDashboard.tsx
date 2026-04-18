@@ -5,6 +5,7 @@ import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { ShieldCheck, Users, Mail, UserPlus, Loader2, Activity } from 'lucide-react';
 import type { User as UserType } from '@shared/types';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 export function AdminDashboard() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -14,6 +15,11 @@ export function AdminDashboard() {
     total: users?.length || 0,
     students: users?.filter(u => u.role === 'öğrenci').length || 0,
     coaches: users?.filter(u => u.role === 'koç').length || 0,
+  };
+  const handleSuspend = (email: string) => {
+    toast.warning(`${email} adlı kullanıcı askıya alındı.`, {
+      description: "Bu işlem şu an için sadece görsel bir simülasyondur.",
+    });
   };
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -86,10 +92,10 @@ export function AdminDashboard() {
                   </td>
                 </tr>
               ) : users?.map((user) => (
-                <tr key={user.id} className="border-b-2 border-slate-100 hover:bg-slate-50 transition-colors">
+                <tr key={user.id} className="border-b-2 border-slate-100 hover:bg-playful-teal/5 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs uppercase">
+                      <div className="w-8 h-8 rounded-lg border-2 border-playful-dark bg-slate-100 flex items-center justify-center font-bold text-xs uppercase">
                         {user.email.charAt(0)}
                       </div>
                       <span className="font-bold">{user.email}</span>
@@ -105,7 +111,12 @@ export function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 font-mono text-xs text-muted-foreground">{user.id.slice(0, 8)}...</td>
                   <td className="px-6 py-4">
-                    <button className="text-xs font-black hover:underline text-playful-red">ASKIYA AL</button>
+                    <button 
+                      onClick={() => handleSuspend(user.email)}
+                      className="text-xs font-black hover:bg-playful-red hover:text-white border-2 border-transparent hover:border-playful-dark px-2 py-1 rounded transition-all"
+                    >
+                      ASKIYA AL
+                    </button>
                   </td>
                 </tr>
               ))}
