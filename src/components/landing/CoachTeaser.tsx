@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Users, ClipboardList, AlertCircle, Plus, CheckCircle2, Sparkles, TrendingUp, BarChart3, Star } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
@@ -7,6 +8,12 @@ import { cn } from '@/lib/utils';
 export function CoachTeaser() {
   const [assigned, setAssigned] = useState(false);
   const handleDemoAssign = () => {
+    toast.custom((t) => (
+      <div className="bg-playful-dark text-white p-4 rounded-2xl border-4 border-playful-teal shadow-playful flex items-center gap-3">
+        <Sparkles className="text-playful-yellow w-6 h-6 animate-bounce" />
+        <span className="font-black uppercase text-sm">Selin B. netlerini artırdı! 🚀</span>
+      </div>
+    ), { duration: 4000 });
     setAssigned(true);
     confetti({
       particleCount: 150,
@@ -16,11 +23,20 @@ export function CoachTeaser() {
     });
     setTimeout(() => setAssigned(false), 3000);
   };
-  const mockStudents = [
+  const [mockStudents, setMockStudents] = useState([
     { name: 'Mert Y.', progress: 85, alert: false, level: 14, status: 'Uçuşta' },
     { name: 'Selin B.', progress: 28, alert: true, level: 8, status: 'Geri Kaldı' },
     { name: 'Emre K.', progress: 64, alert: false, level: 11, status: 'Stabil' },
-  ];
+  ]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMockStudents(prev => prev.map(s => ({
+        ...s,
+        progress: Math.min(100, s.progress + (Math.random() > 0.8 ? 1 : 0))
+      })));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <section className="max-w-7xl mx-auto px-4 py-16 space-y-20">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">

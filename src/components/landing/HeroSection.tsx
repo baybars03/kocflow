@@ -13,6 +13,7 @@ interface HeroSectionProps {
 export function HeroSection({ funnel }: HeroSectionProps) {
   const [days, setDays] = useState(0);
   const user = useAuth((s) => s.user);
+  const isHydrated = useAuth((s) => s.isHydrated);
   const userRole = user?.role;
   const userEmail = user?.email;
   const isLoggedIn = !!user;
@@ -20,18 +21,18 @@ export function HeroSection({ funnel }: HeroSectionProps) {
     setDays(Math.max(0, differenceInDays(TARGET_DATE, new Date())));
   }, []);
   const getHeading = () => {
-    if (isLoggedIn) return `Hoş Geldin, ${userEmail?.split('@')[0] || 'Kaşif'}!`;
-    if (funnel === 'koç') return "Kariyerini KocFlow İle";
-    return "Öğrenci Akışını";
+    if (isLoggedIn && isHydrated) return `Hoş Geldin, ${userEmail?.split('@')[0] || 'Kaşif'}!`;
+    if (funnel === 'koç') return "İŞİNİ VE PORTFÖYÜNÜ";
+    return "HAYALİNDEKİ ÜNİVERSİTEYİ";
   };
   const getSubHeading = () => {
-    if (isLoggedIn) return "Akışına kalmış yerden devam et.";
-    if (funnel === 'koç') return "Geleceğin şampiyonlarına rehberlik et, işini dijitalleştir ve binlerce öğrenciye ulaş.";
-    return "Türkiye'nin en gelişmiş AI destekli rehberlik ve koçluk ekosistemiyle zirveye odaklan.";
+    if (isLoggedIn && isHydrated) return "Akışına kalmış yerden devam et, hedeflerine bir adım daha yaklaş.";
+    if (funnel === 'koç') return "Geleceğin şampiyonlarına rehberlik et, tüm süreçlerini dijitalleştir ve binlerce yeni öğrenciye anında ulaş.";
+    return "Türkiye'nin en gelişmiş AI destekli rehberlik ekosistemiyle eksiklerini kapat, disiplin kazan ve zirveye odaklan.";
   };
   const getPrimaryCTA = () => {
     if (!isLoggedIn) {
-      if (funnel === 'koç') return { label: "Koç Olarak Katıl", path: "/signup?role=koç", icon: UserPlus };
+      if (funnel === 'koç') return { label: "Portföyünü Yönet", path: "/signup?role=koç", icon: UserPlus };
       return { label: "Ücretsiz Başla", path: "/signup?role=öğrenci", icon: Rocket };
     }
     if (userRole === 'koç') return { label: "Panele Dön", path: "/coach", icon: ArrowRight };
@@ -40,9 +41,9 @@ export function HeroSection({ funnel }: HeroSectionProps) {
   };
   const primaryCTA = getPrimaryCTA();
   const accentColor = funnel === 'koç' ? 'text-playful-red' : 'text-playful-teal';
-  const previewImg = funnel === 'koç' 
-    ? "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80" 
-    : "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80";
+  const previewImg = funnel === 'koç'
+    ? "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80"
+    : "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80";
   return (
     <section className="max-w-7xl mx-auto px-4 pt-16 md:pt-24 pb-12 overflow-hidden relative">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center text-center lg:text-left">
@@ -76,7 +77,7 @@ export function HeroSection({ funnel }: HeroSectionProps) {
               className="text-6xl md:text-8xl xl:text-9xl font-black text-playful-dark tracking-tighter leading-[0.85] uppercase"
             >
               {getHeading()} <br />
-              {!isLoggedIn && (
+              {(!isLoggedIn || !isHydrated) && (
                 <span className={cn(accentColor, "drop-shadow-[4px_4px_0px_#1e293b]")}>
                   {funnel === 'koç' ? "BÜYÜT!" : "YÖNET!"}
                 </span>
