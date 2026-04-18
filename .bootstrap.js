@@ -77,14 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add canvas-confetti@^1.9.0",
-    "bun add lucide-react clsx tailwind-merge framer-motion zustand",
-    "bun add canvas-confetti lucide-react clsx tailwind-merge framer-motion zustand react-router-dom @tanstack/react-query date-fns react-swipeable embla-carousel-react",
-    "bun add react-swipeable",
-    "bun add embla-carousel-react",
-    "bun add framer-motion lucide-react clsx tailwind-merge canvas-confetti"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
