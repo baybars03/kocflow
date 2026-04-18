@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { RoleGateway } from '@/components/landing/RoleGateway';
+import { RoleSelectionPopup } from '@/components/landing/RoleSelectionPopup';
 import { StudentLandingView } from '@/components/landing/StudentLandingView';
 import { CoachLandingView } from '@/components/landing/CoachLandingView';
 export function LandingPage() {
@@ -18,11 +18,12 @@ export function LandingPage() {
   const handleRoleSelect = (role: 'öğrenci' | 'koç') => {
     localStorage.setItem('kocflow-funnel-pref', role);
     setActiveFunnel(role);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const handleResetFunnel = () => {
     localStorage.removeItem('kocflow-funnel-pref');
     setActiveFunnel(null);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   if (!isHydrated) {
     return (
@@ -34,12 +35,11 @@ export function LandingPage() {
       </div>
     );
   }
-  // If user is logged in, we show the student view by default as a "marketing" landing, 
-  // but if they aren't logged in and haven't chosen, show the gateway.
+  // Primary gateway for unauthenticated users without a saved preference
   if (!isLoggedIn && !activeFunnel) {
-    return <RoleGateway onSelect={handleRoleSelect} />;
+    return <RoleSelectionPopup onSelect={handleRoleSelect} />;
   }
-  // Default to student if somehow both are null but user is logged in
+  // Transition to specific views based on funnel
   const currentRole = activeFunnel || 'öğrenci';
   return (
     <div className="animate-in fade-in duration-700">
