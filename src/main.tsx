@@ -24,6 +24,7 @@ import { CoachStudentDetail } from '@/pages/CoachStudentDetail'
 import { AdminDashboard } from '@/pages/AdminDashboard'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { QuizPage } from '@/pages/QuizPage'
+import MessagesPage from '@/pages/MessagesPage'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 const queryClient = new QueryClient({
@@ -79,6 +80,15 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute allowedRoles={['öğrenci']}>
         <PlayfulLayout><TasksPage /></PlayfulLayout>
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/messages",
+    element: (
+      <ProtectedRoute allowedRoles={['öğrenci', 'koç']}>
+        <PlayfulLayout><MessagesPage /></PlayfulLayout>
       </ProtectedRoute>
     ),
     errorElement: <RouteErrorBoundary />,

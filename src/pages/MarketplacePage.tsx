@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 export function MarketplacePage() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+  const assignedCoachId = useAuth((s) => s.user?.assignedCoachId);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   // Initialize search from URL params
   useEffect(() => {
@@ -74,7 +75,7 @@ export function MarketplacePage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCoaches?.map((coach) => (
-            <PlayfulCard key={coach.id} className="p-0 overflow-hidden flex flex-col group h-full">
+            <PlayfulCard key={coach.id} className="p-0 overflow-hidden flex flex-col group h-full hover:scale-[1.02] transition-transform">
               <div className="aspect-square relative overflow-hidden border-b-4 border-playful-dark">
                 <img src={coach.avatarUrl} alt={coach.displayName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute top-4 left-4">
@@ -109,9 +110,15 @@ export function MarketplacePage() {
                   <div className="flex items-center gap-2 font-black text-muted-foreground text-sm">
                     <Users className="w-4 h-4" /> {coach.studentCount} Öğrenci
                   </div>
-                  <Link to={`/coach/${coach.id}`} className="playful-button bg-playful-teal text-white py-2 px-4 text-sm group-hover:-translate-x-1">
-                    İncele <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
+                  {assignedCoachId === coach.id ? (
+                    <Link to="/messages" className="playful-button bg-playful-teal text-white py-2 px-4 text-xs">
+                      Senin Koçun
+                    </Link>
+                  ) : (
+                    <Link to={`/coach/${coach.id}`} className="playful-button bg-white text-playful-dark py-2 px-4 text-sm group-hover:-translate-x-1">
+                      İncele <ArrowRight className="w-4 h-4 ml-1" />
+                    </Link>
+                  )}
                 </div>
               </div>
             </PlayfulCard>

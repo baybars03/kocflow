@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ClipboardList, TrendingUp, LogOut, HelpCircle, ShoppingBag, LogIn, UserPlus, User, ShieldCheck, Star } from 'lucide-react';
+import { Home, ClipboardList, TrendingUp, LogOut, HelpCircle, ShoppingBag, LogIn, UserPlus, User, ShieldCheck, Star, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -36,6 +36,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
       return [
         { label: 'Akış', path: '/dashboard', icon: Home, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal text-white' },
         { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red', activeColor: 'bg-playful-red text-white' },
+        { label: 'Mesajlar', path: '/messages', icon: MessageCircle, color: 'hover:bg-playful-teal', activeColor: 'bg-playful-teal text-white' },
         { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow', activeColor: 'bg-playful-yellow text-playful-dark' },
         { label: 'Market', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-slate-100', activeColor: 'bg-playful-dark text-white' },
         { label: 'Profil', path: '/profile', icon: User, color: 'hover:bg-slate-100', activeColor: 'bg-slate-200 text-playful-dark' },

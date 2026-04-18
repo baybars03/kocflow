@@ -150,17 +150,17 @@ export function HomePage() {
                   <MessageCircle className="w-8 h-8 fill-current" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black">
-                    {assignedCoach ? `${assignedCoach.displayName}'a Soru Sor!` : "Koçun Seni Bekliyor!"}
+                  <h3 className="text-xl font-black flex items-center gap-2">
+                    {assignedCoach ? `${assignedCoach.displayName}'a Soru Sor!` : "Koçun Seni Bekliyor!"} <Sparkles className="w-4 h-4 animate-pulse" />
                   </h3>
                   <p className="font-bold text-white/80">Haftalık programın ve deneme analizlerin hazır.</p>
                 </div>
               </div>
-              <button 
-                onClick={() => navigate('/profile')} 
+              <button
+                onClick={() => navigate('/messages')}
                 className="playful-button bg-white text-playful-teal py-3 px-8 text-sm"
               >
-                Mesaja Git
+                Koçunla Konuş
               </button>
             </PlayfulCard>
           )}
