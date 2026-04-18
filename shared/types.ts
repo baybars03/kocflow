@@ -50,7 +50,18 @@ export interface SignupRequest {
   password?: string;
   role: UserRole;
 }
-export type TYTSubject = 'Matematik' | 'Türkçe' | 'Sosyal' | 'Fen';
+export type TYTSubject = 
+  | 'Matematik' 
+  | 'Türkçe' 
+  | 'Sosyal' 
+  | 'Fen' 
+  | 'İngilizce' 
+  | 'Din Kültürü' 
+  | 'Geometri' 
+  | 'LGS-Matematik' 
+  | 'LGS-Fen' 
+  | 'LGS-Türkçe' 
+  | 'LGS-Sosyal';
 export interface TYTTask {
   id: string;
   userId: string;
@@ -68,6 +79,8 @@ export interface DenemeScore {
   sosyal: number;
   fen: number;
   totalNet: number;
+  ingilizce?: number;
+  din?: number;
 }
 export interface UserStats {
   level: number;

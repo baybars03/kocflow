@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown } from 'lucide-react';
+import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown, ShieldAlert } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
@@ -17,9 +17,11 @@ export function HomePage() {
   const navigate = useNavigate();
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
+  const userEmail = useAuth((s) => s.user?.email);
   const now = new Date();
   const examPassed = isAfter(now, TARGET_DATE);
-  const remainingDays = differenceInDays(TARGET_DATE, now);
+  const rawDays = differenceInDays(TARGET_DATE, now);
+  const remainingDays = Math.max(0, rawDays);
   const { data: tasks, createTask } = useTasks(userId);
   const { data: stats } = useStats(userId);
   const { data: scores } = useScores(userId);
@@ -34,7 +36,7 @@ export function HomePage() {
     trackMouse: true
   });
   const avgNet = scores && scores.length > 0
-    ? (scores.reduce((acc, s) => acc + s.totalNet, 0) / scores.length).toFixed(1)
+    ? (scores.reduce((acc, s) => acc + (s.totalNet || 0), 0) / scores.length).toFixed(1)
     : '0';
   const handleAddRec = (subject: TYTSubject, topic: string) => {
     if (!userId) return;
@@ -42,24 +44,40 @@ export function HomePage() {
       onSuccess: () => toast.success(`${topic} görevin başarıyla eklendi! ✨`)
     });
   };
-  if (userRole !== 'öğrenci') return <div className="flex items-center justify-center p-20"><Loader2 className="w-12 h-12 animate-spin text-playful-teal" /></div>;
+  const getGreeting = () => {
+    if (userRole === 'admin') return 'Sistem Yöneticisi Paneli 🛠️';
+    if (userRole === 'koç') return `Hoş Geldiniz, ${userEmail?.split('@')[0]} 👨‍🏫`;
+    return 'Selam Şampiyon! 👋';
+  };
+  if (!userRole || (userRole !== 'öğrenci' && (userRole === 'koç' || userRole === 'admin'))) {
+    return (
+      <div className="flex flex-col items-center justify-center p-20 gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
+        <p className="font-black text-xl">Doğru panele yönlendiriliyorsun...</p>
+      </div>
+    );
+  }
   return (
     <div {...swipeHandlers} className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-12">
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between no-print">
         <div className="space-y-2 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-playful-dark tracking-tighter">Selam Şampiyon! 👋</h1>
-          <p className="text-lg md:text-xl font-bold text-muted-foreground italic">Bugün yeni bir rekor kırmaya ne dersin?</p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-playful-dark tracking-tighter">
+            {getGreeting()}
+          </h1>
+          <p className="text-lg md:text-xl font-bold text-muted-foreground italic">
+            {examPassed ? 'Büyük gün geldi çattı! Başarılar dileriz.' : 'Bugün yeni bir rekor kırmaya ne dersin?'}
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <button onClick={() => window.print()} className="p-4 border-4 border-playful-dark rounded-xl bg-white shadow-playful hover:-translate-y-1 active:translate-y-0 active:shadow-playful-active transition-all">
             <FileDown className="w-6 h-6" />
           </button>
           <PlayfulCard className={cn(
-            "flex flex-col items-center py-4 px-8 border-playful-dark shadow-playful min-w-[140px]", 
+            "flex flex-col items-center py-4 px-8 border-playful-dark shadow-playful min-w-[140px]",
             examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white"
           )}>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">TYT Maratonu</span>
-            <span className="text-4xl lg:text-5xl font-black leading-none my-1">{remainingDays > 0 ? remainingDays : 0}</span>
+            <span className="text-4xl lg:text-5xl font-black leading-none my-1">{remainingDays}</span>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">GÜN KALDI</span>
           </PlayfulCard>
         </div>
@@ -73,27 +91,32 @@ export function HomePage() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {recsLoading ? (
                  <div className="col-span-full flex justify-center py-12"><Loader2 className="animate-spin text-playful-teal w-8 h-8" /></div>
-               ) : recommendations?.slice(0, 4).map((rec, i) => (
-                  <PlayfulCard key={i} className="bg-white border-4 border-playful-dark group overflow-hidden flex flex-col justify-between">
-                    <div>
-                      <span className={cn(
-                        "text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-playful-dark", 
-                        SUBJECT_COLORS[rec.subject] || "bg-slate-200"
-                      )}>
-                        {rec.subject}
-                      </span>
-                      <h3 className="text-xl font-black my-2 group-hover:text-playful-red transition-colors">{rec.topic}</h3>
-                      <p className="text-xs font-bold text-muted-foreground mb-4 leading-tight">{rec.reason}</p>
-                    </div>
-                    <button
-                      onClick={() => handleAddRec(rec.subject, rec.topic)}
-                      className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2.5 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] active:translate-y-0 active:shadow-none transition-all"
-                    >
-                      <Plus className="w-4 h-4" strokeWidth={4} /> Hedefe Ekle
-                    </button>
-                  </PlayfulCard>
-                ))
-               }
+               ) : recommendations?.length ? (
+                 recommendations.slice(0, 4).map((rec, i) => (
+                    <PlayfulCard key={i} className="bg-white border-4 border-playful-dark group overflow-hidden flex flex-col justify-between">
+                      <div>
+                        <span className={cn(
+                          "text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-playful-dark",
+                          SUBJECT_COLORS[rec.subject as keyof typeof SUBJECT_COLORS] || "bg-slate-200"
+                        )}>
+                          {rec.subject}
+                        </span>
+                        <h3 className="text-xl font-black my-2 group-hover:text-playful-red transition-colors">{rec.topic}</h3>
+                        <p className="text-xs font-bold text-muted-foreground mb-4 leading-tight">{rec.reason}</p>
+                      </div>
+                      <button
+                        onClick={() => handleAddRec(rec.subject, rec.topic)}
+                        className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2.5 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] active:translate-y-0 active:shadow-none transition-all"
+                      >
+                        <Plus className="w-4 h-4" strokeWidth={4} /> Hedefe Ekle
+                      </button>
+                    </PlayfulCard>
+                  ))
+               ) : (
+                 <div className="col-span-full p-8 border-4 border-dashed border-slate-200 rounded-3xl text-center font-bold text-slate-400">
+                   Öneriler hazırlanıyor... Deneme netlerini girerek AI Koç'u eğitebilirsin!
+                 </div>
+               )}
              </div>
           </div>
           <PlayfulCard className="bg-white border-playful-dark shadow-playful print-section">
@@ -114,9 +137,9 @@ export function HomePage() {
                 </div>
               </div>
             </div>
-            <LevelProgress 
-              value={stats?.progressToNextLevel || 0} 
-              label={`${stats?.points || 0} TOPLAM PUAN`} 
+            <LevelProgress
+              value={stats?.progressToNextLevel || 0}
+              label={`${stats?.points || 0} TOPLAM PUAN`}
             />
           </PlayfulCard>
         </div>
@@ -139,15 +162,15 @@ export function HomePage() {
           <PlayfulCard className="bg-playful-dark text-white p-6 border-playful-dark shadow-playful hidden lg:block">
             <h4 className="font-black text-xl mb-2">Hızlı Erişim 🚀</h4>
             <div className="space-y-3">
-              <button 
-                onClick={() => navigate('/tasks')} 
+              <button
+                onClick={() => navigate('/tasks')}
                 className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
               >
                 <span className="font-bold">Görevlerim</span>
                 <Plus className="w-4 h-4" />
               </button>
-              <button 
-                onClick={() => navigate('/progress')} 
+              <button
+                onClick={() => navigate('/progress')}
                 className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
               >
                 <span className="font-bold">Başarı Takibi</span>

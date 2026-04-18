@@ -39,6 +39,12 @@ export function AdminDashboard() {
       onSuccess: () => toast.success(`Kullanıcı rolü ${nextRole} olarak güncellendi!`)
     });
   };
+  const handlePremiumToggle = (user: UserType) => {
+    const nextState = !user.isPremium;
+    updateUser.mutate({ id: user.id, isPremium: nextState }, {
+      onSuccess: () => toast.success(`Kullanıcı Premium statüsü ${nextState ? 'aktif' : 'pasif'} edildi! 💎`)
+    });
+  };
   const handleDelete = (id: string) => {
     deleteUser.mutate(id, {
       onSuccess: () => toast.error("Kullanıcı sistemden başarıyla silindi.")
@@ -96,24 +102,6 @@ export function AdminDashboard() {
               </BarChart>
             </ResponsiveContainer>
           </PlayfulCard>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-section">
-          <div className="playful-card bg-playful-teal text-white p-4 text-center">
-            <p className="text-[10px] font-black uppercase">Retention</p>
-            <p className="text-3xl font-black">%{analytics?.retentionRate || 0}</p>
-          </div>
-          <div className="playful-card bg-playful-red text-white p-4 text-center">
-            <p className="text-[10px] font-black uppercase">Öğrenciler</p>
-            <p className="text-3xl font-black">{stats.students}</p>
-          </div>
-          <div className="playful-card bg-playful-yellow text-playful-dark p-4 text-center">
-            <p className="text-[10px] font-black uppercase">Aktif Seans</p>
-            <p className="text-3xl font-black">{analytics?.activeSessions || 0}</p>
-          </div>
-          <div className="playful-card bg-playful-dark text-white p-4 text-center">
-            <p className="text-[10px] font-black uppercase">Koçlar</p>
-            <p className="text-3xl font-black">{stats.coaches}</p>
-          </div>
         </div>
         <PlayfulCard className="p-0 overflow-hidden border-4 bg-white print-section">
           <div className="p-6 border-b-4 border-playful-dark bg-slate-50 flex items-center justify-between">
@@ -175,12 +163,16 @@ export function AdminDashboard() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className={cn(
-                        "inline-block p-2 rounded-lg border-2 border-playful-dark transition-all",
-                        user.isPremium ? "bg-playful-yellow shadow-playful-active" : "bg-white text-slate-200 border-slate-200"
-                      )}>
+                      <button
+                        onClick={() => handlePremiumToggle(user)}
+                        disabled={updateUser.isPending}
+                        className={cn(
+                          "p-2 rounded-lg border-2 border-playful-dark transition-all hover:scale-110 active:scale-90",
+                          user.isPremium ? "bg-playful-yellow shadow-playful-active" : "bg-white text-slate-200 border-slate-200"
+                        )}
+                      >
                         <Crown className={cn("w-5 h-5", user.isPremium && "fill-current")} />
-                      </div>
+                      </button>
                     </td>
                     <td className="px-6 py-4 text-right no-print">
                       {user.role !== 'admin' && (

@@ -18,13 +18,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { userId, xpEarned } = await c.req.json();
     if (!userId) return bad(c, 'userId required');
     const userEntity = new UserEntity(c.env, userId);
+    // Convert XP to session/progress units
+    const sessionBoost = Math.max(1, Math.floor(xpEarned / 100));
     await userEntity.mutate(s => ({
       ...s,
-      pomodoroSessions: (s.pomodoroSessions || 0) + Math.floor(xpEarned / 100) // Dummy conversion
+      pomodoroSessions: (s.pomodoroSessions || 0) + sessionBoost
     }));
     await NotificationEntity.create(c.env, {
-      id: crypto.randomUUID(), userId, title: "Deneme Bitirildi! 🏆", 
-      message: `Harika bir deneme çıkardın. +${xpEarned} XP ve sürpriz bir rozet kazandın!`, 
+      id: crypto.randomUUID(), userId, title: "Deneme Bitirildi! 🏆",
+      message: `Harika bir deneme çıkardın. +${xpEarned} XP kazandın!`,
       type: 'streak', read: false, createdAt: Date.now()
     });
     return ok(c, { xpEarned });
@@ -66,8 +68,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       .filter(u => u.role === 'öğrenci')
       .map(u => {
         const uScores = scoresRes.items.filter(s => s.userId === u.id);
-        const avgNet = uScores.length > 0 
-          ? Number((uScores.reduce((acc, s) => acc + s.totalNet, 0) / uScores.length).toFixed(1))
+        const avgNet = uScores.length > 0
+          ? Number((uScores.reduce((acc, s) => acc + (s.totalNet || 0), 0) / uScores.length).toFixed(1))
           : 0;
         return {
           displayName: u.email.split('@')[0],
@@ -84,9 +86,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { userId } = await c.req.json();
     if (!userId) return bad(c, 'userId required');
     const userEntity = new UserEntity(c.env, userId);
-    const updated = await userEntity.mutate(s => ({ 
-      ...s, 
-      pomodoroSessions: (s.pomodoroSessions || 0) + 1 
+    const updated = await userEntity.mutate(s => ({
+      ...s,
+      pomodoroSessions: (s.pomodoroSessions || 0) + 1
     }));
     await NotificationEntity.create(c.env, {
       id: crypto.randomUUID(),
@@ -99,73 +101,46 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     return ok(c, updated);
   });
-  // COACH BULK ASSIGN
-  app.post('/api/coach/assign-bulk', async (c) => {
-    const { studentIds, subject, topic } = await c.req.json() as BulkTaskRequest;
-    if (!studentIds || !studentIds.length) return bad(c, 'No students selected');
-    const results = await Promise.all(studentIds.map(async (sid) => {
-      const task: TYTTask = {
-        id: crypto.randomUUID(),
-        userId: sid,
-        subject,
-        topic,
-        done: false,
-        createdAt: Date.now()
-      };
-      return TaskEntity.create(c.env, task);
-    }));
-    return ok(c, { count: results.length });
-  });
-  // NOTIFICATIONS
-  app.get('/api/notifications/:userId', async (c) => {
+  // AI RECOMMENDATIONS
+  app.get('/api/ai-tasks/:userId', async (c) => {
     const userId = c.req.param('userId');
-    const res = await NotificationEntity.list(c.env);
-    const userNotifs = res.items
-      .filter(n => n.userId === userId)
-      .sort((a, b) => b.createdAt - a.createdAt);
-    return ok(c, userNotifs);
-  });
-  app.patch('/api/notifications/:id/read', async (c) => {
-    const id = c.req.param('id');
-    const entity = new NotificationEntity(c.env, id);
-    const updated = await entity.mutate(s => ({ ...s, read: true }));
-    return ok(c, updated);
-  });
-  // CHAT
-  app.get('/api/chat/:userId', async (c) => {
-    const currentUserId = c.req.query('viewerId');
-    const otherUserId = c.req.param('userId');
-    const res = await ChatMessageEntity.list(c.env);
-    const messages = res.items
-      .filter(m =>
-        (m.senderId === currentUserId && m.receiverId === otherUserId) ||
-        (m.senderId === otherUserId && m.receiverId === currentUserId)
-      )
-      .sort((a, b) => a.timestamp - b.timestamp);
-    return ok(c, messages);
-  });
-  app.post('/api/chat', async (c) => {
-    const body = await c.req.json() as Omit<ChatMessage, 'id' | 'timestamp'>;
-    const msg: ChatMessage = {
-      ...body,
-      id: crypto.randomUUID(),
-      timestamp: Date.now()
+    const scoresRes = await ScoreEntity.list(c.env);
+    const userScores = scoresRes.items.filter(s => s.userId === userId);
+    const library: Record<TYTSubject, string[]> = {
+      Matematik: ['Üslü Sayılar', 'Mutlak Değer', 'Problemler', 'Fonksiyonlar'],
+      Türkçe: ['Yazım Kuralları', 'Cümlenin Öğeleri', 'Sözcükte Yapı'],
+      Fen: ['Optik', 'Kalıtım', 'Madde ve Özellikleri'],
+      Sosyal: ['Osmanlı Kültürü', 'İklim Bilgisi', 'Felsefe'],
+      İngilizce: ['Tenses', 'Vocabulary', 'Reading'],
+      'Din Kültürü': ['İnanç', 'İbadet', 'Ahlak'],
+      Geometri: ['Üçgenler', 'Çokgenler', 'Analitik Geometri'],
+      'LGS-Matematik': ['Çarpanlar ve Katlar', 'Üslü İfadeler'],
+      'LGS-Fen': ['Mevsimler ve İklim', 'DNA ve Genetik'],
+      'LGS-Türkçe': ['Sözcükte Anlam', 'Cümlede Anlam'],
+      'LGS-Sosyal': ['Bir Kahraman Doğuyor', 'Milli Uyanış']
     };
-    return ok(c, await ChatMessageEntity.create(c.env, msg));
+    if (userScores.length === 0) {
+      return ok(c, [
+        { subject: 'Matematik', topic: 'Temel Kavramlar', reason: 'TYT başlangıcı için en kritik konu!' },
+        { subject: 'Türkçe', topic: 'Paragrafta Anlam', reason: 'Sınavın kalbi paragraf, her gün çözmelisin!' }
+      ] as Recommendation[]);
+    }
+    const averages = {
+      Matematik: userScores.reduce((acc, s) => acc + (s.matematik || 0), 0) / userScores.length,
+      Türkçe: userScores.reduce((acc, s) => acc + (s.turkce || 0), 0) / userScores.length,
+      Fen: userScores.reduce((acc, s) => acc + (s.fen || 0), 0) / userScores.length,
+      Sosyal: userScores.reduce((acc, s) => acc + (s.sosyal || 0), 0) / userScores.length,
+    };
+    const weakest = Object.entries(averages).sort((a, b) => a[1] - b[1])[0][0] as TYTSubject;
+    const topics = library[weakest] || ['Genel Tekrar'];
+    const recs: Recommendation[] = topics.slice(0, 3).map(topic => ({
+      subject: weakest,
+      topic,
+      reason: `${weakest} ortalaman ${averages[weakest as keyof typeof averages].toFixed(1)} net. Bu konuyu çalışarak artırabilirsin!`
+    }));
+    return ok(c, recs);
   });
-  // AI TUTOR
-  app.post('/api/ai/ask', async (c) => {
-    const responses = [
-      "Harika bir soru! TYT'de bu konu genellikle pratikle çözülür. 🚀",
-      "Küçük adımlar büyük yollar açar şampiyon! Bugün 20 paragraf çözmeye ne dersin?",
-      "Pes etmek yok! TYT bir maratondur, depar değil. Biraz dinlen ve devam et. ⚡",
-      "Matematik aslında bir bulmaca gibidir. Temel kavramları oturttuğunda gerisi çorap söküğü gibi gelecek!",
-      "Odaklanma sorunu yaşıyorsan Pomodoro tekniğini denemelisin. Ben yanındayım!"
-    ];
-    const randomRes = responses[Math.floor(Math.random() * responses.length)];
-    return ok(c, { content: randomRes, timestamp: Date.now() });
-  });
-  // ADMIN ENDPOINTS
+  // ADMIN ANALYTICS
   app.get('/api/admin/analytics', async (c) => {
     const users = await UserEntity.list(c.env);
     const tasks = await TaskEntity.list(c.env);
@@ -199,55 +174,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await UserEntity.delete(c.env, id);
     return ok(c, { id });
   });
-  app.get('/api/coach/students/:coachId', async (c) => {
-    const coachId = c.req.param('coachId');
-    const usersRes = await UserEntity.list(c.env);
-    const scoresRes = await ScoreEntity.list(c.env);
-    const assigned = usersRes.items.filter(u => u.assignedCoachId === coachId || (u.role === 'öğrenci' && coachId === 'demo-koc'));
-    const stats: CoachStudentStats[] = assigned.map(u => {
-      const uScores = scoresRes.items.filter(s => s.userId === u.id);
-      const latest = uScores.length > 0 ? uScores[uScores.length - 1].totalNet : 0;
-      return {
-        studentId: u.id,
-        email: u.email,
-        level: Math.floor((u.pomodoroSessions || 0) / 5) + 1,
-        streak: 1,
-        latestNet: latest,
-        lowProgressAlert: latest < 50 && uScores.length > 0
-      };
-    });
-    return ok(c, stats);
-  });
-  app.get('/api/ai-tasks/:userId', async (c) => {
-    const userId = c.req.param('userId');
-    const scoresRes = await ScoreEntity.list(c.env);
-    const userScores = scoresRes.items.filter(s => s.userId === userId);
-    if (userScores.length === 0) {
-      return ok(c, [
-        { subject: 'Matematik', topic: 'Temel Kavramlar', reason: 'TYT başlangıcı için en kritik konu!' },
-        { subject: 'Türkçe', topic: 'Paragrafta Anlam', reason: 'Her gün en az 20 soru çözmelisin.' }
-      ] as Recommendation[]);
-    }
-    const averages = {
-      Matematik: userScores.reduce((acc, s) => acc + s.matematik, 0) / userScores.length,
-      Türkçe: userScores.reduce((acc, s) => acc + s.turkce, 0) / userScores.length,
-      Fen: userScores.reduce((acc, s) => acc + s.fen, 0) / userScores.length,
-      Sosyal: userScores.reduce((acc, s) => acc + s.sosyal, 0) / userScores.length,
-    };
-    const weakest = Object.entries(averages).sort((a, b) => a[1] - b[1])[0][0] as TYTSubject;
-    const library: Record<TYTSubject, string[]> = {
-      Matematik: ['Üslü Sayılar', 'Mutlak Değer', 'Problemler', 'Fonksiyonlar'],
-      Türkçe: ['Yazım Kuralları', 'Cümlenin Öğeleri', 'Sözcükte Yapı'],
-      Fen: ['Optik', 'Kalıtım', 'Madde ve Özellikleri'],
-      Sosyal: ['Osmanlı Kültür ve Medeniyet', 'İklim Bilgisi', 'Felsefenin Temel Konuları']
-    };
-    const recs: Recommendation[] = library[weakest].slice(0, 3).map(topic => ({
-      subject: weakest,
-      topic,
-      reason: `${weakest} netlerin düşük seyrediyor, bu konuya odaklanmak fark yaratabilir!`
-    }));
-    return ok(c, recs);
-  });
+  // AUTH
   app.post('/api/auth/login', async (c) => {
     const { email } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
@@ -260,9 +187,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/auth/signup', async (c) => {
     const { email, role } = await c.req.json() as SignupRequest;
-    const newUser: User = { id: crypto.randomUUID(), email, role, coachAssignments: [], pomodoroSessions: 0, createdAt: Date.now() };
+    const newUser: User = { id: crypto.randomUUID(), email, role, coachAssignments: [], pomodoroSessions: 0, createdAt: Date.now(), isPremium: false };
     return ok(c, { user: await UserEntity.create(c.env, newUser), token: 'mock-token' });
   });
+  // TASKS & SCORES CRUD
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');
     const page = await TaskEntity.list(c.env);
@@ -310,5 +238,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       pomodoroSessions: user.pomodoroSessions ?? 0
     };
     return ok(c, stats);
+  });
+  // CHAT & NOTIFS
+  app.get('/api/notifications/:userId', async (c) => {
+    const userId = c.req.param('userId');
+    const res = await NotificationEntity.list(c.env);
+    return ok(c, res.items.filter(n => n.userId === userId).sort((a, b) => b.createdAt - a.createdAt));
+  });
+  app.post('/api/chat', async (c) => {
+    const body = await c.req.json() as Omit<ChatMessage, 'id' | 'timestamp'>;
+    const msg: ChatMessage = { ...body, id: crypto.randomUUID(), timestamp: Date.now() };
+    return ok(c, await ChatMessageEntity.create(c.env, msg));
   });
 }

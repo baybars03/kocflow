@@ -19,10 +19,10 @@ const SUBJECT_KEYS = [
   { label: 'Fen', key: 'fen' as const }
 ];
 const calculateTYT = (s: Pick<DenemeScore, 'turkce' | 'matematik' | 'sosyal' | 'fen'>) => {
-  const t = s.turkce ?? 0;
-  const m = s.matematik ?? 0;
-  const soc = s.sosyal ?? 0;
-  const f = s.fen ?? 0;
+  const t = Number(s.turkce) || 0;
+  const m = Number(s.matematik) || 0;
+  const soc = Number(s.sosyal) || 0;
+  const f = Number(s.fen) || 0;
   return Math.floor(100 + (t * 3.3) + (m * 3.3) + (soc * 3.4) + (f * 3.4));
 };
 export function ProgressPage() {
@@ -112,7 +112,7 @@ export function ProgressPage() {
               </PlayfulCard>
             ))}
           </div>
-          <PlayfulCard className="p-6 md:p-10 h-[400px] bg-white border-playful-dark shadow-playful">
+          <PlayfulCard className="p-6 md:p-10 bg-white border-playful-dark shadow-playful aspect-video lg:aspect-[21/9]">
             {isLoading ? <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin" /></div> :
              scores?.length ? (
                <ResponsiveContainer width="100%" height="100%">
@@ -120,7 +120,10 @@ export function ProgressPage() {
                    <CartesianGrid strokeDasharray="5 5" vertical={false} />
                    <XAxis dataKey="formattedDate" />
                    <YAxis domain={[0, 120]} />
-                   <Tooltip contentStyle={{ borderRadius: '12px', border: '4px solid #1e293b' }} />
+                   <Tooltip 
+                     contentStyle={{ borderRadius: '12px', border: '4px solid #1e293b', fontWeight: 'bold' }} 
+                     itemStyle={{ color: '#1e293b' }}
+                   />
                    <Line
                     type="monotone"
                     dataKey="totalNet"
@@ -128,10 +131,16 @@ export function ProgressPage() {
                     strokeWidth={8}
                     strokeLinecap="round"
                     dot={{ r: 10, fill: '#1e293b', strokeWidth: 4, stroke: '#fff' }}
+                    activeDot={{ r: 12, fill: '#FF6B6B' }}
                    />
                  </LineChart>
                </ResponsiveContainer>
-             ) : <div className="flex flex-col items-center justify-center h-full text-slate-300 font-bold"><TrendingUp className="w-12 h-12 mb-2" />Veri Bekleniyor</div>}
+             ) : (
+               <div className="flex flex-col items-center justify-center h-full text-slate-300 font-bold">
+                 <TrendingUp className="w-12 h-12 mb-2" />
+                 Netlerini kaydetmeye başla, gelişimini burada gör!
+               </div>
+             )}
           </PlayfulCard>
         </TabsContent>
         <TabsContent value="simulator" className="print-section">
@@ -156,7 +165,7 @@ export function ProgressPage() {
           </div>
         </TabsContent>
         <TabsContent value="leaderboard" className="no-print">
-          <PlayfulCard className="p-0 overflow-hidden border-4">
+          <PlayfulCard className="p-0 overflow-hidden border-4 border-playful-dark">
             <div className="p-6 border-b-4 border-playful-dark bg-playful-yellow flex items-center justify-between">
               <h3 className="text-xl font-black flex items-center gap-2"><Trophy className="w-6 h-6" /> Küresel Sıralama</h3>
               <span className="text-xs font-black uppercase">En Yüksek 10 Ort. Net</span>
