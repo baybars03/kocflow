@@ -15,8 +15,9 @@ import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 export function LandingPage() {
   const isHydrated = useAuth((s) => s.isHydrated);
-  const user = useAuth((s) => s.user);
-  const isLoggedIn = !!user;
+  // Using primitive selector to prevent loops and unnecessary re-renders
+  const userId = useAuth((s) => s.user?.id);
+  const isLoggedIn = !!userId;
   const { pathname } = useLocation();
   const [activeFunnel, setActiveFunnel] = useState<'öğrenci' | 'koç' | null>(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -61,7 +62,6 @@ export function LandingPage() {
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection />
       </div>
-      {/* Dynamic Personalization Logic */}
       {activeFunnel === 'koç' ? (
         <CoachTeaser />
       ) : (

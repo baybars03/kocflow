@@ -16,6 +16,8 @@ interface PlayfulLayoutProps {
 export function PlayfulLayout({ children }: PlayfulLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  // Strict primitive selectors as per Zustand Zero-Tolerance Rule
+  const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
   const userEmail = useAuth((s) => s.user?.email);
   const logout = useAuth((s) => s.logout);
@@ -24,7 +26,7 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
     navigate('/login');
   };
   const isDemo = userEmail?.includes('kampus.com') || userEmail?.includes('kocflow.com');
-  const isLoggedIn = !!userEmail;
+  const isLoggedIn = !!userId;
   const getNavItems = () => {
     if (!isLoggedIn) {
       return [

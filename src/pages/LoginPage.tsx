@@ -23,9 +23,9 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login({ email: loginEmail, password: loginPassword });
-      // We get the updated state after login from the store because the store update is awaited inside login()
-      const state = useAuth.getState();
-      const role = state.user?.role;
+      // Access store state outside of hook phase to check role for redirection
+      const user = useAuth.getState().user;
+      const role = user?.role;
       toast.success('KocFlow\'a giriş yapıldı! Akış başlıyor. 🚀');
       if (role === 'öğrenci') {
         navigate('/dashboard');

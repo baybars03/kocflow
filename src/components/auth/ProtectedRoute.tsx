@@ -3,15 +3,26 @@ import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import type { UserRole } from '@shared/types';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Loader2 } from 'lucide-react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: UserRole[];
 }
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  // Strict primitive selectors
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
+  const isHydrated = useAuth((s) => s.isHydrated);
   const location = useLocation();
+  // Wait for persistence hydration to avoid premature redirection
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-playful-bg p-4">
+        <Loader2 className="w-12 h-12 animate-spin text-playful-teal mb-4" />
+        <p className="font-black text-playful-dark uppercase tracking-widest animate-pulse">Oturum Açılıyor...</p>
+      </div>
+    );
+  }
   if (!userId) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -26,8 +37,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
           <p className="font-bold text-muted-foreground mb-8">
             Bu sayfayı görüntülemek için "{userRole}" yetkisi yeterli değil.
           </p>
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="playful-button bg-playful-teal w-full text-white"
           >
             <ArrowLeft className="w-5 h-5" strokeWidth={3} />
