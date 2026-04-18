@@ -91,6 +91,8 @@ export interface QuizQuestion {
 export interface QuizResult {
   score: number;
   nets: number;
+  correctCount: number;
+  totalQuestions: number;
   timeSpent: number;
   xpEarned: number;
 }

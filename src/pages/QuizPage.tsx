@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { Timer, CheckCircle, XCircle, Star, Trophy, ArrowRight, Loader2, Sparkles, Rocket } from 'lucide-react';
+import { Timer, Trophy, ArrowRight, Loader2, Sparkles, Rocket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
+import type { QuizResult } from '@shared/types';
 const MOCK_QUESTIONS = [
   { id: '1', subject: 'Matematik', text: "x < x² ve x³ < x şartını sağlayan x değerleri hangi aralıktadır?", options: ["(-1, 0)", "(0, 1)", "(1, 2)", "(-∞, -1)"], correct: 0 },
   { id: '2', subject: 'Türkçe', text: '"Pek çok" kelimesinin yazımı hangisinde doğrudur?', options: ["Pekçok", "Pek çok", "Pek-çok", "Pek çoklar"], correct: 1 },
@@ -20,38 +21,22 @@ export function QuizPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(300); // 5 mins
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [finalScore, setFinalScore] = useState<any>(null);
+  const [finalScore, setFinalScore] = useState<QuizResult | null>(null);
   const userId = useAuth(s => s.user?.id);
-  const userEmail = useAuth(s => s.user?.email);
   const navigate = useNavigate();
-  useEffect(() => {
-    let timer: any;
-    if (step === 'active' && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    } else if (timeLeft === 0 && step === 'active') {
-      handleSubmit();
-    }
-    return () => clearInterval(timer);
-  }, [step, timeLeft]);
-  const handleAnswer = (idx: number) => {
-    const newAnswers = [...answers];
-    newAnswers[currentIdx] = idx;
-    setAnswers(newAnswers);
-    if (currentIdx < MOCK_QUESTIONS.length - 1) {
-      setCurrentIdx(currentIdx + 1);
-    } else {
-      handleSubmit();
-    }
-  };
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async (finalAnswers: number[]) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     let correctCount = 0;
-    answers.forEach((ans, i) => {
+    // Use finalAnswers passed directly to avoid stale 'answers' state
+    finalAnswers.forEach((ans, i) => {
       if (ans === MOCK_QUESTIONS[i].correct) correctCount++;
     });
-    const results = {
+    const results: QuizResult = {
       score: Math.floor((correctCount / MOCK_QUESTIONS.length) * 100),
       nets: correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25,
+      correctCount,
+      totalQuestions: MOCK_QUESTIONS.length,
       timeSpent: 300 - timeLeft,
       xpEarned: correctCount * 50 + 100 // +100 bonus
     };
@@ -70,12 +55,41 @@ export function QuizPage() {
     setStep('results');
     setIsSubmitting(false);
     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+  }, [isSubmitting, timeLeft, userId]);
+  useEffect(() => {
+    let timer: any;
+    if (step === 'active' && timeLeft > 0) {
+      timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    } else if (timeLeft === 0 && step === 'active') {
+      // Fallback submission if time runs out
+      handleSubmit(answers);
+    }
+    return () => clearInterval(timer);
+  }, [step, timeLeft, handleSubmit, answers]);
+  const handleAnswer = (idx: number) => {
+    const newAnswers = [...answers];
+    newAnswers[currentIdx] = idx;
+    setAnswers(newAnswers);
+    if (currentIdx < MOCK_QUESTIONS.length - 1) {
+      setCurrentIdx(currentIdx + 1);
+    } else {
+      // Pass the actual newest array to handleSubmit to bypass async state update lag
+      handleSubmit(newAnswers);
+    }
   };
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
+  if (isSubmitting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
+        <p className="font-black text-2xl animate-pulse">Sonuçların Hesaplanıyor...</p>
+      </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 min-h-[60vh] flex flex-col justify-center">
       <AnimatePresence mode="wait">
@@ -90,14 +104,14 @@ export function QuizPage() {
                 <p className="text-xl font-bold opacity-80">5 Soru | 5 Dakika | Hızlı Net Hesabı</p>
               </div>
               <div className="grid grid-cols-2 gap-4 text-playful-dark font-black">
-                <div className="bg-white p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active">
+                <div className="bg-white p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active text-sm md:text-base">
                   +250 XP Kazan
                 </div>
-                <div className="bg-playful-yellow p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active">
+                <div className="bg-playful-yellow p-4 rounded-2xl border-2 border-playful-dark shadow-playful-active text-sm md:text-base">
                   Sürpriz Badge
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setStep('active')}
                 className="playful-button bg-playful-red text-white text-2xl w-full py-6 group"
               >
@@ -120,10 +134,10 @@ export function QuizPage() {
             </div>
             <PlayfulCard className="bg-white p-10 min-h-[400px] flex flex-col justify-between border-playful-dark shadow-playful">
               <div className="space-y-6">
-                <span className="bg-playful-teal/10 text-playful-teal border-2 border-playful-teal px-3 py-1 rounded-full font-black text-xs uppercase">
+                <span className="bg-playful-teal/10 text-playful-teal border-2 border-playful-teal px-3 py-1 rounded-full font-black text-[10px] md:text-xs uppercase">
                   {MOCK_QUESTIONS[currentIdx].subject}
                 </span>
-                <h2 className="text-3xl font-black leading-tight text-playful-dark">
+                <h2 className="text-2xl md:text-3xl font-black leading-tight text-playful-dark">
                   {MOCK_QUESTIONS[currentIdx].text}
                 </h2>
               </div>
@@ -154,7 +168,7 @@ export function QuizPage() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Doğru', val: Math.round(finalScore.nets + (MOCK_QUESTIONS.length - finalScore.nets)/1.25), color: 'bg-playful-teal text-white' },
+                  { label: 'Doğru', val: finalScore.correctCount, color: 'bg-playful-teal text-white' },
                   { label: 'Net', val: finalScore.nets.toFixed(2), color: 'bg-white text-playful-dark' },
                   { label: 'Kazanılan XP', val: `+${finalScore.xpEarned}`, color: 'bg-playful-red text-white' },
                   { label: 'Süre', val: `${Math.floor(finalScore.timeSpent / 60)}dk`, color: 'bg-playful-dark text-white' },
@@ -176,7 +190,7 @@ export function QuizPage() {
                    </Link>
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={() => navigate('/dashboard')}
                   className="playful-button bg-playful-dark text-white w-full py-6"
                 >
