@@ -2,7 +2,7 @@ import React from 'react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { useAuth } from '@/hooks/use-auth';
 import { useCoaches } from '@/hooks/use-tyt-api';
-import { User, Shield, CreditCard, LogOut, ChevronRight, Settings, Star, Crown, MessageCircle } from 'lucide-react';
+import { User, Shield, CreditCard, LogOut, Settings, Crown, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -16,12 +16,10 @@ export function ProfilePage() {
   const assignedCoachId = useAuth((s) => s.user?.assignedCoachId);
   const logout = useAuth((s) => s.logout);
   const { data: coaches } = useCoaches();
-
   const assignedCoach = React.useMemo(() => {
     if (!coaches || !assignedCoachId) return null;
     return coaches.find((c) => c.id === assignedCoachId);
   }, [coaches, assignedCoachId]);
-
   if (!userId) return null;
   const handleLogout = () => {
     logout();
@@ -39,7 +37,7 @@ export function ProfilePage() {
             {userEmail?.charAt(0).toUpperCase()}
           </div>
           <div className="space-y-1">
-            <h2 className="text-2xl font-black">{userEmail}</h2>
+            <h2 className="text-2xl font-black text-playful-dark">{userEmail}</h2>
             <div className="flex gap-2">
               <Badge variant="playful" className="uppercase">{userRole}</Badge>
               {isPremium && <Badge variant="warning" className="gap-1"><Crown className="w-3 h-3 fill-current" /> PREMIUM</Badge>}
@@ -48,7 +46,7 @@ export function ProfilePage() {
         </div>
         <div className="divide-y-2 divide-slate-100">
           <div className="p-6 md:p-8 space-y-6">
-            <h3 className="font-black text-xl flex items-center gap-2">
+            <h3 className="font-black text-xl flex items-center gap-2 text-playful-dark">
               <Settings className="w-5 h-5 text-playful-red" /> Hesap Detayları
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -58,12 +56,12 @@ export function ProfilePage() {
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Kayıt Tarihi</p>
-                <p className="font-bold">Mayıs 2024</p>
+                <p className="font-bold text-playful-dark">Mayıs 2024</p>
               </div>
             </div>
           </div>
           <div className="p-6 md:p-8 space-y-6">
-            <h3 className="font-black text-xl flex items-center gap-2">
+            <h3 className="font-black text-xl flex items-center gap-2 text-playful-dark">
               <Shield className="w-5 h-5 text-playful-teal" /> Koçluk Durumu
             </h3>
             <div className="bg-slate-50 p-6 rounded-2xl border-4 border-playful-dark flex items-center justify-between gap-4 shadow-playful-active">
@@ -72,7 +70,7 @@ export function ProfilePage() {
                   <Users className="text-playful-dark w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-black">{assignedCoach ? assignedCoach.displayName : "Koç Atanmadı"}</p>
+                  <p className="font-black text-playful-dark">{assignedCoach ? assignedCoach.displayName : "Koç Atanmadı"}</p>
                   <p className="text-xs font-bold text-muted-foreground">{assignedCoach ? "Birebir rehberliğin aktif" : "KocFlow maratonunda rehberini seç"}</p>
                 </div>
               </div>
@@ -85,7 +83,7 @@ export function ProfilePage() {
             </div>
           </div>
           <div className="p-6 md:p-8 space-y-6">
-            <h3 className="font-black text-xl flex items-center gap-2">
+            <h3 className="font-black text-xl flex items-center gap-2 text-playful-dark">
               <CreditCard className="w-5 h-5 text-playful-teal" /> Abonelik & Ödeme
             </h3>
             <div className={cn(
@@ -97,7 +95,7 @@ export function ProfilePage() {
                   <Crown className={cn("w-6 h-6", isPremium ? "text-playful-yellow fill-current animate-bounce" : "text-slate-200")} />
                 </div>
                 <div>
-                  <p className="font-black text-lg">
+                  <p className="font-black text-lg text-playful-dark">
                     {isPremium ? "Premium Paket Aktif" : "Ücretsiz Paket"}
                   </p>
                   <p className="text-sm font-bold opacity-70">

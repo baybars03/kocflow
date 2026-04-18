@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api-client';
+import { useAuth } from '@/hooks/use-auth';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Search, Star, Users, ArrowRight, Loader2, CheckCircle, GraduationCap } from 'lucide-react';
 import type { CoachProfile } from '@shared/types';
@@ -32,7 +33,7 @@ export function MarketplacePage() {
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
       <div className="space-y-4">
-        <h1 className="text-5xl font-black tracking-tight">KocFlow Marketplace 🏢</h1>
+        <h1 className="text-5xl font-black tracking-tight text-playful-dark">KocFlow Marketplace 🏢</h1>
         <p className="text-lg font-bold text-muted-foreground">Başarıya giden yolda sana rehberlik edecek en iyi akışı ve koçu bul.</p>
       </div>
       <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -91,7 +92,7 @@ export function MarketplacePage() {
               </div>
               <div className="p-6 flex-1 flex flex-col space-y-4">
                 <div className="flex justify-between items-start">
-                  <h3 className="text-2xl font-black group-hover:text-playful-red transition-colors">{coach.displayName}</h3>
+                  <h3 className="text-2xl font-black group-hover:text-playful-red transition-colors text-playful-dark">{coach.displayName}</h3>
                   <div className="flex items-center gap-1 font-black">
                     <Star className="w-4 h-4 fill-playful-yellow text-playful-yellow" /> {coach.rating}
                   </div>
