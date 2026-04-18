@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { TaskEntity, ScoreEntity } from "./entities";
-import { ok, bad, notFound, isStr } from './core-utils';
-import type { TYTTask, DenemeScore } from "@shared/types";
+import { ok, bad, notFound } from './core-utils';
+import type { TYTTask, DenemeScore, UserStats } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // TASKS API
   app.get('/api/tasks', async (c) => {
@@ -51,11 +51,33 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // STATS API
   app.get('/api/stats', async (c) => {
-    const tasks = await TaskEntity.list(c.env);
-    const completed = tasks.items.filter(t => t.done).length;
-    const total = tasks.items.length;
-    const level = Math.floor(completed / 5) + 1;
-    const points = (completed * 50) + (total * 10);
-    return ok(c, { level, points, completedTasks: completed, totalTasks: total });
+    const tasksRes = await TaskEntity.list(c.env);
+    const scoresRes = await ScoreEntity.list(c.env);
+    const tasks = tasksRes.items;
+    const completed = tasks.filter(t => t.done).length;
+    const total = tasks.length;
+    // Gamification Logic
+    const pointsPerTask = 50;
+    const pointsPerScore = 100;
+    const currentPoints = (completed * pointsPerTask) + (scoresRes.items.length * pointsPerScore);
+    const pointsPerLevel = 250;
+    const level = Math.floor(currentPoints / pointsPerLevel) + 1;
+    const pointsInCurrentLevel = currentPoints % pointsPerLevel;
+    const progress = Math.floor((pointsInCurrentLevel / pointsPerLevel) * 100);
+    // Mock Streak based on recent activity
+    let streak = 0;
+    const lastActivityTs = tasks.length > 0 ? Math.max(...tasks.map(t => t.createdAt)) : Date.now();
+    const daysSinceLastActivity = Math.floor((Date.now() - lastActivityTs) / (1000 * 60 * 60 * 24));
+    streak = daysSinceLastActivity < 2 ? (completed > 0 ? Math.min(completed, 7) : 1) : 0;
+    const stats: UserStats = {
+      level,
+      points: currentPoints,
+      completedTasks: completed,
+      totalTasks: total,
+      nextLevelPoints: pointsPerLevel,
+      progressToNextLevel: progress,
+      streakDays: streak
+    };
+    return ok(c, stats);
   });
 }

@@ -25,4 +25,7 @@ export interface UserStats {
   points: number;
   completedTasks: number;
   totalTasks: number;
+  nextLevelPoints: number;
+  progressToNextLevel: number; // 0-100
+  streakDays: number;
 }
