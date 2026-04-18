@@ -1,9 +1,48 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { TaskEntity, ScoreEntity, UserEntity, ChatMessageEntity, NotificationEntity } from "./entities";
+import { TaskEntity, ScoreEntity, UserEntity, ChatMessageEntity, NotificationEntity, CoachProfileEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats, ChatMessage, Notification } from "@shared/types";
+import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats, ChatMessage, Notification, CoachProfile } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // LANDING STATS
+  app.get('/api/landing/stats', async (c) => {
+    return ok(c, {
+      activeStudents: 1240,
+      totalTasksDone: 45200,
+      avgNetIncrease: 18.5,
+      successRate: 92
+    });
+  });
+  // COACH MARKETPLACE
+  app.get('/api/coaches', async (c) => {
+    await CoachProfileEntity.ensureSeed(c.env);
+    const res = await CoachProfileEntity.list(c.env);
+    return ok(c, res.items);
+  });
+  app.get('/api/coaches/:id', async (c) => {
+    const id = c.req.param('id');
+    const coach = await new CoachProfileEntity(c.env, id).getState();
+    if (!coach.id) return notFound(c, 'Coach not found');
+    return ok(c, coach);
+  });
+  app.post('/api/coaches/assign', async (c) => {
+    const { userId, coachId } = await c.req.json();
+    if (!userId || !coachId) return bad(c, 'Missing IDs');
+    const userEntity = new UserEntity(c.env, userId);
+    await userEntity.mutate(s => ({ ...s, assignedCoachId: coachId }));
+    // Notify the user
+    const coach = await new CoachProfileEntity(c.env, coachId).getState();
+    await NotificationEntity.create(c.env, {
+      id: crypto.randomUUID(),
+      userId,
+      title: "Yeni Koçun Hazır! 🤝",
+      message: `${coach.displayName} ile TYT maratonuna başladın. İlk mesajını atabilirsin!`,
+      type: 'system',
+      read: false,
+      createdAt: Date.now()
+    });
+    return ok(c, { success: true });
+  });
   // NOTIFICATIONS
   app.get('/api/notifications/:userId', async (c) => {
     const userId = c.req.param('userId');
@@ -25,7 +64,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const otherUserId = c.req.param('userId');
     const res = await ChatMessageEntity.list(c.env);
     const messages = res.items
-      .filter(m => 
+      .filter(m =>
         (m.senderId === currentUserId && m.receiverId === otherUserId) ||
         (m.senderId === otherUserId && m.receiverId === currentUserId)
       )
@@ -75,18 +114,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, analytics);
   });
-  app.put('/api/admin/users/:id', async (c) => {
-    const id = c.req.param('id');
-    const body = await c.req.json();
-    const entity = new UserEntity(c.env, id);
-    const updated = await entity.mutate(s => ({ ...s, ...body }));
-    return ok(c, updated);
-  });
-  app.delete('/api/admin/users/:id', async (c) => {
-    const id = c.req.param('id');
-    const success = await UserEntity.delete(c.env, id);
-    return ok(c, { success });
-  });
   app.get('/api/coach/students/:coachId', async (c) => {
     const coachId = c.req.param('coachId');
     const usersRes = await UserEntity.list(c.env);
@@ -105,23 +132,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       };
     });
     return ok(c, stats);
-  });
-  app.post('/api/coach/assign-bulk', async (c) => {
-    const { studentIds, subject, topic } = await c.req.json() as BulkTaskRequest;
-    if (!studentIds?.length) return bad(c, 'No students selected');
-    const creations = studentIds.map(sid => {
-      const task: TYTTask = {
-        id: crypto.randomUUID(),
-        userId: sid,
-        subject,
-        topic,
-        done: false,
-        createdAt: Date.now()
-      };
-      return TaskEntity.create(c.env, task);
-    });
-    await Promise.all(creations);
-    return ok(c, { count: studentIds.length });
   });
   app.get('/api/ai-tasks/:userId', async (c) => {
     const userId = c.req.param('userId');
@@ -152,30 +162,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       reason: `${weakest} netlerin düşük seyrediyor, bu konuya odaklanmak fark yaratabilir!`
     }));
     return ok(c, recs);
-  });
-  app.get('/api/leaderboard', async (c) => {
-    const usersRes = await UserEntity.list(c.env);
-    const scoresRes = await ScoreEntity.list(c.env);
-    const students = usersRes.items.filter(u => u.role === 'öğrenci');
-    const leaderboard: LeaderboardEntry[] = students.map(u => {
-      const uScores = scoresRes.items.filter(s => s.userId === u.id);
-      const avg = uScores.length > 0
-        ? uScores.reduce((acc, s) => acc + s.totalNet, 0) / uScores.length
-        : 0;
-      return {
-        displayName: u.email.split('@')[0].slice(0, 3) + '***',
-        avgNet: Number(avg.toFixed(2)),
-        level: Math.floor((u.pomodoroSessions || 0) / 5) + 1
-      };
-    }).sort((a, b) => b.avgNet - a.avgNet).slice(0, 100);
-    return ok(c, leaderboard);
-  });
-  app.post('/api/pomodoro/complete', async (c) => {
-    const { userId } = await c.req.json();
-    if (!userId) return bad(c, 'userId required');
-    const entity = new UserEntity(c.env, userId);
-    const updated = await entity.mutate(s => ({ ...s, pomodoroSessions: (s.pomodoroSessions || 0) + 1 }));
-    return ok(c, updated);
   });
   app.post('/api/auth/login', async (c) => {
     const { email } = await c.req.json() as LoginRequest;
@@ -228,19 +214,16 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tasks = tasksRes.items.filter(t => t.userId === userId);
     const scores = scoresRes.items.filter(s => s.userId === userId);
     const completed = tasks.filter(t => t.done).length;
-    const pomoCount = user.pomodoroSessions ?? 0;
-    const currentPoints = (completed * 50) + (scores.length * 100) + (pomoCount * 100);
-    const pointsPerLevel = 250;
-    const level = Math.floor(currentPoints / pointsPerLevel) + 1;
+    const currentPoints = (completed * 50) + (scores.length * 100);
     const stats: UserStats = {
-      level,
+      level: Math.floor(currentPoints / 250) + 1,
       points: currentPoints,
       completedTasks: completed,
       totalTasks: tasks.length,
-      nextLevelPoints: pointsPerLevel,
-      progressToNextLevel: Math.floor(((currentPoints % pointsPerLevel) / pointsPerLevel) * 100),
+      nextLevelPoints: 250,
+      progressToNextLevel: Math.floor(((currentPoints % 250) / 250) * 100),
       streakDays: 1,
-      pomodoroSessions: pomoCount
+      pomodoroSessions: user.pomodoroSessions ?? 0
     };
     return ok(c, stats);
   });

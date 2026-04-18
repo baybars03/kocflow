@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, ClipboardList, TrendingUp, LogOut, Users, Settings, HelpCircle } from 'lucide-react';
+import { Home, ClipboardList, TrendingUp, LogOut, Users, Settings, HelpCircle, ShoppingBag, LogIn, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -23,29 +23,36 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
     navigate('/login');
   };
   const isDemo = userEmail?.includes('kampus.com');
+  const isLoggedIn = !!userEmail;
   const getNavItems = () => {
+    if (!isLoggedIn) {
+      return [
+        { label: 'Marketplace', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-teal' },
+      ];
+    }
     if (userRole === 'öğrenci') {
       return [
-        { label: 'Kampüs', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Kampüs', path: '/dashboard', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Marketplace', path: '/marketplace', icon: ShoppingBag, color: 'hover:bg-playful-red' },
         { label: 'Görevler', path: '/tasks', icon: ClipboardList, color: 'hover:bg-playful-red' },
         { label: 'Netlerim', path: '/progress', icon: TrendingUp, color: 'hover:bg-playful-yellow' },
       ];
     }
     if (userRole === 'koç') {
       return [
-        { label: 'Panel', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
-        { label: 'Öğrencilerim', path: '/coach', icon: Users, color: 'hover:bg-playful-red' },
+        { label: 'Panel', path: '/coach', icon: Home, color: 'hover:bg-playful-teal' },
       ];
     }
     if (userRole === 'admin') {
       return [
-        { label: 'Panel', path: '/', icon: Home, color: 'hover:bg-playful-teal' },
+        { label: 'Panel', path: '/admin', icon: Home, color: 'hover:bg-playful-teal' },
         { label: 'Yönetim', path: '/admin', icon: Settings, color: 'hover:bg-playful-yellow' },
       ];
     }
     return [];
   };
   const getRoleHelp = () => {
+    if (!isLoggedIn) return 'Marketplace üzerinden kendine bir koç seçerek başlayabilirsin!';
     switch (userRole) {
       case 'öğrenci': return 'Görevlerini ve netlerini takip edebilirsin.';
       case 'koç': return 'Rehberlik ettiğin öğrencileri yönetebilirsin.';
@@ -59,20 +66,22 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
       <nav className="sticky top-0 z-50 bg-white border-b-4 border-playful-dark px-4 py-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/" className="text-2xl font-black text-playful-dark flex items-center gap-2">
+            <Link to={isLoggedIn ? (userRole === 'öğrenci' ? '/dashboard' : userRole === 'koç' ? '/coach' : '/admin') : '/'} className="text-2xl font-black text-playful-dark flex items-center gap-2">
               <div className="w-10 h-10 bg-playful-red border-4 border-playful-dark rounded-xl flex items-center justify-center text-white shadow-playful hover:scale-105 transition-transform">
                 T
               </div>
               <span className="hidden sm:inline tracking-tighter">TYT KAMPÜS</span>
             </Link>
             <div className="flex items-center gap-1">
-              <span className={cn(
-                "px-2 py-0.5 text-[10px] font-black rounded uppercase border-2 border-playful-dark",
-                userRole === 'öğrenci' ? "bg-playful-teal text-white" : userRole === 'koç' ? "bg-playful-red text-white" : "bg-playful-yellow text-playful-dark",
-                isDemo && "animate-pulse"
-              )}>
-                {userRole}
-              </span>
+              {isLoggedIn && (
+                <span className={cn(
+                  "px-2 py-0.5 text-[10px] font-black rounded uppercase border-2 border-playful-dark",
+                  userRole === 'öğrenci' ? "bg-playful-teal text-white" : userRole === 'koç' ? "bg-playful-red text-white" : "bg-playful-yellow text-playful-dark",
+                  isDemo && "animate-pulse"
+                )}>
+                  {userRole}
+                </span>
+              )}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -103,27 +112,24 @@ export function PlayfulLayout({ children }: PlayfulLayoutProps) {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <div className="md:hidden flex gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "p-2 rounded-lg border-2 border-playful-dark",
-                    location.pathname === item.path ? "bg-playful-dark text-white" : "bg-white"
-                  )}
-                >
-                  <item.icon className="w-5 h-5" strokeWidth={3} />
+            {!isLoggedIn ? (
+              <div className="flex gap-2">
+                <Link to="/login" className="px-4 py-2 border-2 border-playful-dark rounded-xl font-black hover:bg-slate-50 transition-colors flex items-center gap-2">
+                  <LogIn className="w-4 h-4" /> Giriş
                 </Link>
-              ))}
-            </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 md:px-4 md:py-2 rounded-xl border-2 border-playful-dark bg-white font-bold text-playful-dark hover:bg-playful-red hover:text-white transition-all flex items-center gap-2 shadow-playful active:shadow-none active:translate-y-1"
-            >
-              <LogOut className="w-5 h-5" strokeWidth={3} />
-              <span className="hidden md:inline">Çıkış</span>
-            </button>
+                <Link to="/signup" className="px-4 py-2 bg-playful-teal text-white border-2 border-playful-dark rounded-xl font-black shadow-playful hover:-translate-y-1 transition-all flex items-center gap-2">
+                  <UserPlus className="w-4 h-4" /> Kaydol
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="p-2 md:px-4 md:py-2 rounded-xl border-2 border-playful-dark bg-white font-bold text-playful-dark hover:bg-playful-red hover:text-white transition-all flex items-center gap-2 shadow-playful active:shadow-none active:translate-y-1"
+              >
+                <LogOut className="w-5 h-5" strokeWidth={3} />
+                <span className="hidden md:inline">Çıkış</span>
+              </button>
+            )}
           </div>
         </div>
       </nav>

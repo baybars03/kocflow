@@ -11,6 +11,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
+import { LandingPage } from '@/pages/LandingPage'
+import { MarketplacePage } from '@/pages/MarketplacePage'
+import { CoachProfileView } from '@/pages/CoachProfileView'
 import { HomePage } from '@/pages/HomePage'
 import { TasksPage } from '@/pages/TasksPage'
 import { ProgressPage } from '@/pages/ProgressPage'
@@ -31,6 +34,21 @@ const queryClient = new QueryClient({
 });
 const router = createBrowserRouter([
   {
+    path: "/",
+    element: <PlayfulLayout><LandingPage /></PlayfulLayout>,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/marketplace",
+    element: <PlayfulLayout><MarketplacePage /></PlayfulLayout>,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/coach/:id",
+    element: <PlayfulLayout><CoachProfileView /></PlayfulLayout>,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
     path: "/login",
     element: <LoginPage />,
     errorElement: <RouteErrorBoundary />,
@@ -41,7 +59,7 @@ const router = createBrowserRouter([
     errorElement: <RouteErrorBoundary />,
   },
   {
-    path: "/",
+    path: "/dashboard",
     element: (
       <ProtectedRoute allowedRoles={['öğrenci', 'koç', 'admin']}>
         <PlayfulLayout><HomePage /></PlayfulLayout>

@@ -17,6 +17,26 @@ export interface User {
   isAITutorActive?: boolean;
   createdAt?: number;
 }
+export interface CoachProfile {
+  id: string; // Same as User ID
+  displayName: string;
+  bio: string;
+  avatarUrl: string;
+  rating: number;
+  reviewCount: number;
+  studentCount: number;
+  price: number;
+  successRate: number;
+  specialties: string[];
+  isVerified: boolean;
+}
+export interface CoachSubscription {
+  id: string;
+  studentId: string;
+  coachId: string;
+  status: 'active' | 'pending' | 'cancelled';
+  startDate: number;
+}
 export interface AuthResponse {
   user: User;
   token: string;
