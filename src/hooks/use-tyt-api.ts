@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest, ChatMessage, Notification } from '@shared/types';
+import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest, ChatMessage, Notification, CoachProfile } from '@shared/types';
+export function useCoaches() {
+  return useQuery({
+    queryKey: ['coaches'],
+    queryFn: () => api<CoachProfile[]>('/api/coaches'),
+  });
+}
 export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
