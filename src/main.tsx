@@ -22,6 +22,7 @@ import { SignupPage } from '@/pages/SignupPage'
 import { CoachDashboard } from '@/pages/CoachDashboard'
 import { CoachStudentDetail } from '@/pages/CoachStudentDetail'
 import { AdminDashboard } from '@/pages/AdminDashboard'
+import { QuizPage } from '@/pages/QuizPage'
 import { PlayfulLayout } from '@/components/layout/PlayfulLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 const queryClient = new QueryClient({
@@ -46,6 +47,11 @@ const router = createBrowserRouter([
   {
     path: "/coach/:id",
     element: <PlayfulLayout><CoachProfileView /></PlayfulLayout>,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/quiz",
+    element: <PlayfulLayout><QuizPage /></PlayfulLayout>,
     errorElement: <RouteErrorBoundary />,
   },
   {

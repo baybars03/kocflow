@@ -13,6 +13,22 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       successRate: 92
     });
   });
+  // QUIZ ENDPOINTS
+  app.post('/api/quizzes/complete', async (c) => {
+    const { userId, xpEarned } = await c.req.json();
+    if (!userId) return bad(c, 'userId required');
+    const userEntity = new UserEntity(c.env, userId);
+    await userEntity.mutate(s => ({
+      ...s,
+      pomodoroSessions: (s.pomodoroSessions || 0) + Math.floor(xpEarned / 100) // Dummy conversion
+    }));
+    await NotificationEntity.create(c.env, {
+      id: crypto.randomUUID(), userId, title: "Deneme Bitirildi! 🏆", 
+      message: `Harika bir deneme çıkardın. +${xpEarned} XP ve sürpriz bir rozet kazandın!`, 
+      type: 'streak', read: false, createdAt: Date.now()
+    });
+    return ok(c, { xpEarned });
+  });
   // COACH MARKETPLACE
   app.get('/api/coaches', async (c) => {
     await CoachProfileEntity.ensureSeed(c.env);

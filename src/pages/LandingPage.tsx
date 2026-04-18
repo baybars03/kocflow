@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsSection } from '@/components/landing/StatsSection';
+import { SponsorsSection } from '@/components/landing/SponsorsSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { PopularCoaches } from '@/components/landing/PopularCoaches';
+import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { Link } from 'react-router-dom';
@@ -19,11 +21,13 @@ export function LandingPage() {
     <div className="space-y-24 pb-32">
       {/* 1. HERO - Psychological Impact */}
       <HeroSection />
-      {/* 2. STATS - Social Proof */}
+      {/* 2. SPONSORS - Trust */}
+      <SponsorsSection />
+      {/* 3. STATS - Social Proof */}
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection stats={stats} />
       </div>
-      {/* 3. FEATURES - Value Prop */}
+      {/* 4. FEATURES - Value Prop */}
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
           <h2 className="text-5xl font-black uppercase tracking-tight">Neden TYT Kampüs? 🤔</h2>
@@ -45,20 +49,22 @@ export function LandingPage() {
           ))}
         </div>
       </section>
-      {/* 4. MARKETPLACE INTEGRATION */}
+      {/* 5. PRACTICE PREVIEW - High Engagement */}
+      <PracticeQuizPreview />
+      {/* 6. MARKETPLACE INTEGRATION */}
       <PopularCoaches />
-      {/* 5. PRICING - Monetization Funnel */}
+      {/* 7. PRICING - Monetization Funnel */}
       <PricingSection />
-      {/* 6. EXPANDED SOCIAL PROOF */}
+      {/* 8. EXPANDED SOCIAL PROOF */}
       <TestimonialCarousel />
-      {/* 7. FINAL CTA */}
+      {/* 9. FINAL CTA */}
       <section className="px-4 max-w-6xl mx-auto">
         <PlayfulCard className="bg-playful-dark text-white p-12 md:p-20 text-center space-y-10 border-playful-dark shadow-playful relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-playful-red/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-playful-teal/20 blur-3xl rounded-full translate-y-1/2 -translate-x-1/2" />
           <div className="relative space-y-6">
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase">
-              Başarı Hikayene <br /> 
+              Başarı Hikayene <br />
               <span className="text-playful-yellow underline decoration-playful-yellow decoration-4 underline-offset-8">Bugün Başla!</span>
             </h2>
             <p className="text-xl md:text-2xl font-bold text-white/70 max-w-2xl mx-auto">

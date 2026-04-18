@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTrigger } from '@/components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from '@/lib/utils';
 import type { DenemeScore } from '@shared/types';
 const SUBJECT_KEYS = [
   { label: 'Türkçe', key: 'turkce' as const },

@@ -78,6 +78,21 @@ export interface UserStats {
   progressToNextLevel: number;
   streakDays: number;
   pomodoroSessions: number;
+  totalQuizPoints?: number;
+  badges?: string[];
+}
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  options: string[];
+  correctAnswer: number;
+  subject: TYTSubject;
+}
+export interface QuizResult {
+  score: number;
+  nets: number;
+  timeSpent: number;
+  xpEarned: number;
 }
 export interface Recommendation {
   subject: TYTSubject;

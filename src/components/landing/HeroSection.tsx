@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Rocket, Zap, AlarmClock } from 'lucide-react';
+import { Rocket, Zap, AlarmClock, Star } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 const TARGET_DATE = new Date('2025-06-14');
 export function HeroSection() {
@@ -10,7 +10,7 @@ export function HeroSection() {
     setDays(differenceInDays(TARGET_DATE, new Date()));
   }, []);
   return (
-    <section className="text-center space-y-10 pt-16 md:pt-24 px-4 overflow-hidden">
+    <section className="text-center space-y-10 pt-16 md:pt-24 px-4 overflow-hidden relative">
       <div className="flex flex-col items-center gap-6">
         <motion.div
           animate={{ rotate: [0, -2, 2, -2, 0], scale: [1, 1.05, 1] }}
@@ -23,9 +23,9 @@ export function HeroSection() {
         <motion.div
           animate={{ x: [-5, 5, -5] }}
           transition={{ duration: 0.5, repeat: Infinity }}
-          className="bg-playful-red text-white border-4 border-playful-dark px-4 py-1 rounded-lg font-black text-xs uppercase shadow-playful-active"
+          className="bg-playful-red text-white border-4 border-playful-dark px-4 py-1 rounded-lg font-black text-xs uppercase shadow-playful-active z-10"
         >
-          Acele Et! Son 100 öğrenci için Ücretsiz Premium fırsatı! 🚨
+          Acele Et! Bugün 100 Bedava Deneme Slotu Kaldı! 🚨
         </motion.div>
       </div>
       <motion.h1
@@ -33,13 +33,13 @@ export function HeroSection() {
         animate={{ y: 0, opacity: 1 }}
         className="text-6xl md:text-9xl font-black text-playful-dark tracking-tighter leading-[0.85] uppercase"
       >
-        Sınavı <br />
-        <span className="text-playful-teal drop-shadow-[4px_4px_0px_#1e293b]">Nakavt</span> Et!
+        TYT'yi Oyun Yap, <br />
+        <span className="text-playful-teal drop-shadow-[4px_4px_0px_#1e293b]">Kazan!</span>
       </motion.h1>
       <p className="text-xl md:text-3xl font-bold text-muted-foreground max-w-3xl mx-auto leading-tight">
         Netlerini yapay zeka ve profesyonel koçlarla <span className="text-playful-dark underline decoration-playful-red decoration-4">zirveye taşı</span>. TYT artık bir stres değil, bir oyun alanı!
       </p>
-      <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
+      <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4 relative">
         <Link
           to="/signup"
           className="playful-button bg-playful-red text-white text-3xl py-8 px-12 group"
@@ -47,10 +47,17 @@ export function HeroSection() {
           Hemen Başla! <Rocket className="w-10 h-10 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
         </Link>
         <Link
-          to="/marketplace"
-          className="playful-button bg-white text-playful-dark text-xl py-6 px-10"
+          to="/quiz"
+          className="playful-button bg-playful-yellow text-playful-dark text-xl py-6 px-10 relative"
         >
-          Koçları İncele <Zap className="w-6 h-6 fill-playful-yellow text-playful-dark" />
+          Hemen Deneme Çöz! <Zap className="w-6 h-6 fill-playful-dark text-playful-dark" />
+          <motion.div 
+             animate={{ scale: [1, 1.2, 1] }} 
+             transition={{ repeat: Infinity, duration: 2 }}
+             className="absolute -top-3 -right-3 bg-white border-2 border-playful-dark rounded-full p-1"
+          >
+            <Star className="w-4 h-4 fill-playful-red text-playful-red" />
+          </motion.div>
         </Link>
       </div>
     </section>
