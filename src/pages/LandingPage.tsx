@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { StatsSection } from '@/components/landing/StatsSection';
@@ -8,21 +8,28 @@ import { PracticeQuizPreview } from '@/components/landing/PracticeQuizPreview';
 import { TestimonialCarousel } from '@/components/landing/TestimonialCarousel';
 import { AIKocFeature } from '@/components/landing/AIKocFeature';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
 export function LandingPage() {
   const isHydrated = useAuth((s) => s.isHydrated);
   const userEmail = useAuth((s) => s.user?.email);
   const isLoggedIn = !!userEmail;
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   if (!isHydrated) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-playful-teal border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 bg-playful-bg">
+        <div className="w-16 h-16 bg-playful-teal border-4 border-playful-dark rounded-2xl animate-bounce shadow-playful flex items-center justify-center text-white text-3xl font-black">
+          K
+        </div>
+        <p className="font-black text-playful-dark tracking-tighter uppercase animate-pulse">Akış Hazırlanıyor...</p>
       </div>
     );
   }
   return (
-    <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden">
+    <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden animate-in fade-in duration-700">
       <HeroSection />
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection />
@@ -32,7 +39,7 @@ export function LandingPage() {
       <AIKocFeature />
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">Neden KocFlow? 🤔</h2>
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-playful-dark">Neden KocFlow? 🤔</h2>
           <p className="font-bold text-muted-foreground text-lg md:text-xl">Sadece bir uygulama değil, senin başarı akışın.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -45,7 +52,7 @@ export function LandingPage() {
               <div className={`${f.color} w-16 h-16 rounded-2xl border-4 border-playful-dark flex items-center justify-center text-white shadow-playful group-hover:rotate-6 transition-transform`}>
                 <f.icon className="w-8 h-8" strokeWidth={3} />
               </div>
-              <h3 className="text-2xl font-black">{f.title}</h3>
+              <h3 className="text-2xl font-black text-playful-dark">{f.title}</h3>
               <p className="font-bold text-muted-foreground text-lg leading-relaxed">{f.desc}</p>
             </PlayfulCard>
           ))}
@@ -76,7 +83,7 @@ export function LandingPage() {
           </div>
         </PlayfulCard>
       </section>
-      <footer className="pt-20 border-t-8 border-playful-dark text-center space-y-8 px-4">
+      <footer className="pt-20 border-t-8 border-playful-dark text-center space-y-8 px-4 bg-white">
         <div className="text-4xl font-black tracking-tighter uppercase italic bg-playful-yellow border-4 border-playful-dark inline-block px-6 py-2 shadow-playful">KOCFLOW</div>
         <div className="flex flex-wrap gap-x-12 gap-y-4 justify-center font-black text-lg uppercase tracking-tighter text-muted-foreground">
           <Link to="/marketplace" className="hover:text-playful-red transition-colors">Marketplace</Link>

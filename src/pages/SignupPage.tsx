@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,18 @@ import { UserPlus, Loader2, GraduationCap, Users, ShieldCheck, ArrowRight } from
 import type { UserRole } from '@shared/types';
 import { cn } from '@/lib/utils';
 export function SignupPage() {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('öğrenci');
   const [loading, setLoading] = useState(false);
   const signup = useAuth((s) => s.signup);
   const navigate = useNavigate();
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'öğrenci' || roleParam === 'koç' || roleParam === 'admin') {
+      setRole(roleParam as UserRole);
+    }
+  }, [searchParams]);
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {

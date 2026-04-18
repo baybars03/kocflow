@@ -16,7 +16,7 @@ const MOCK_QUESTIONS = [
   { id: '4', subject: 'Türkçe', text: '"Sessiz harf türemesi" hangisinde vardır?', options: ["Geliyor", "Hakkımız", "Gidiyor", "Bilgi"], correct: 1 },
   { id: '5', subject: 'Matematik', text: "30 sayısının %40'ı kaçtır?", options: ["10", "12", "14", "15"], correct: 1 },
 ];
-const INITIAL_TIME = 300; 
+const INITIAL_TIME = 300;
 export function QuizPage() {
   const [step, setStep] = useState<'intro' | 'active' | 'results'>('intro');
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -28,16 +28,17 @@ export function QuizPage() {
   const userId = useAuth(s => s.user?.id);
   const navigate = useNavigate();
   const handleSubmit = useCallback(async (finalAnswers: number[]) => {
-    if (isSubmitting) return;
+    // Stop multiple submissions
+    if (isSubmitting || step === 'results') return;
     setIsSubmitting(true);
     let correctCount = 0;
     MOCK_QUESTIONS.forEach((q, i) => {
       if (finalAnswers[i] === q.correct) correctCount++;
     });
-    const currentTimeLeft = timeLeft;
+    // Use current time to calculate spent time reliably
     const timeSpent = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-      : INITIAL_TIME - currentTimeLeft;
+      : INITIAL_TIME - timeLeft;
     const results: QuizResult = {
       score: Math.floor((correctCount / MOCK_QUESTIONS.length) * 100),
       nets: correctCount - (MOCK_QUESTIONS.length - correctCount) * 0.25,
@@ -61,7 +62,7 @@ export function QuizPage() {
     setStep('results');
     setIsSubmitting(false);
     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-  }, [isSubmitting, timeLeft, userId]);
+  }, [isSubmitting, step, timeLeft, userId]);
   useEffect(() => {
     if (step === 'active' && !startTimeRef.current) {
       startTimeRef.current = Date.now();
@@ -69,13 +70,13 @@ export function QuizPage() {
   }, [step]);
   useEffect(() => {
     let timer: any;
-    if (step === 'active' && timeLeft > 0) {
+    if (step === 'active' && timeLeft > 0 && !isSubmitting) {
       timer = setInterval(() => {
         setTimeLeft(t => Math.max(0, t - 1));
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [step, timeLeft]);
+  }, [step, timeLeft, isSubmitting]);
   useEffect(() => {
     if (timeLeft === 0 && step === 'active' && !isSubmitting) {
       handleSubmit(answers);
@@ -96,11 +97,11 @@ export function QuizPage() {
     const sec = s % 60;
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
-  if (isSubmitting) {
+  if (isSubmitting && step !== 'results') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
-        <p className="font-black text-2xl animate-pulse">Sonuçların Hesaplanıyor...</p>
+        <p className="font-black text-2xl animate-pulse text-playful-dark">Sonuçların Hesaplanıyor...</p>
       </div>
     );
   }
@@ -195,7 +196,7 @@ export function QuizPage() {
               </div>
               {!userId ? (
                 <div className="bg-white p-8 rounded-3xl border-4 border-playful-dark space-y-6">
-                   <div className="flex items-center justify-center gap-2 font-black text-xl">
+                   <div className="flex items-center justify-center gap-2 font-black text-xl text-playful-dark">
                       <Sparkles className="text-playful-red" />
                       Puanlarını ve Gelişimini Kaydet!
                    </div>
