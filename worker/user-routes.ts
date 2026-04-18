@@ -1,9 +1,8 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { TaskEntity, ScoreEntity, UserEntity } from "./entities";
-import { ok, bad, notFound } from './core-utils';
-import type { TYTTask, DenemeScore, UserStats, User, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject } from "@shared/types";
-import { format } from "date-fns";
+import { ok, bad } from './core-utils';
+import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // AI RECOMMENDATIONS
   app.get('/api/ai-tasks/:userId', async (c) => {
@@ -43,13 +42,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const students = usersRes.items.filter(u => u.role === 'öğrenci');
     const leaderboard: LeaderboardEntry[] = students.map(u => {
       const uScores = scoresRes.items.filter(s => s.userId === u.id);
-      const avg = uScores.length > 0 
-        ? uScores.reduce((acc, s) => acc + s.totalNet, 0) / uScores.length 
+      const avg = uScores.length > 0
+        ? uScores.reduce((acc, s) => acc + s.totalNet, 0) / uScores.length
         : 0;
       return {
         displayName: u.email.split('@')[0].slice(0, 3) + '***',
         avgNet: Number(avg.toFixed(2)),
-        level: Math.floor((u.pomodoroSessions || 0) / 5) + 1 // Simplified level for leaderboard
+        level: Math.floor((u.pomodoroSessions || 0) / 5) + 1
       };
     }).sort((a, b) => b.avgNet - a.avgNet).slice(0, 100);
     return ok(c, leaderboard);
@@ -114,7 +113,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tasks = tasksRes.items.filter(t => t.userId === userId);
     const scores = scoresRes.items.filter(s => s.userId === userId);
     const completed = tasks.filter(t => t.done).length;
-    const pomoCount = user.pomodoroSessions || 0;
+    const pomoCount = user.pomodoroSessions ?? 0;
     const currentPoints = (completed * 50) + (scores.length * 100) + (pomoCount * 100);
     const pointsPerLevel = 250;
     const level = Math.floor(currentPoints / pointsPerLevel) + 1;
@@ -125,7 +124,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       totalTasks: tasks.length,
       nextLevelPoints: pointsPerLevel,
       progressToNextLevel: Math.floor(((currentPoints % pointsPerLevel) / pointsPerLevel) * 100),
-      streakDays: 1, // Mock
+      streakDays: 1,
       pomodoroSessions: pomoCount
     };
     return ok(c, stats);

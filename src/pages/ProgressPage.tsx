@@ -1,51 +1,83 @@
 import React, { useState } from 'react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useScores, useLeaderboard } from '@/hooks/use-tyt-api';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
-import { Plus, Loader2, Info, TrendingUp, Trophy, Calculator, GraduationCap } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Loader2, TrendingUp, Trophy, Calculator, GraduationCap } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { DenemeScore } from '@shared/types';
 export function ProgressPage() {
   const userId = useAuth((s) => s.user?.id);
   const { data: scores, isLoading, createScore } = useScores(userId);
   const { data: leaderboard, isLoading: lbLoading } = useLeaderboard();
   const [isOpen, setIsOpen] = useState(false);
-  const [form, setForm] = useState({ turkce: 0, matematik: 0, sosial: 0, fen: 0 });
+  const [form, setForm] = useState({ turkce: 0, matematik: 0, sosyal: 0, fen: 0 });
   const chartData = (scores || []).map(score => ({
     ...score,
     formattedDate: format(parseISO(score.date), 'd MMM', { locale: tr })
   }));
-  const latestScore = scores?.[scores.length - 1] || { turkce: 0, matematik: 0, sosyal: 0, fen: 0, totalNet: 0 };
-  // TYT Formula Simulation (Approximate)
-  const calculateTYT = (s: any) => {
+  const latestScore = scores?.[scores.length - 1] || { 
+    turkce: 0, 
+    matematik: 0, 
+    sosyal: 0, 
+    fen: 0, 
+    totalNet: 0 
+  };
+  const calculateTYT = (s: Pick<DenemeScore, 'turkce' | 'matematik' | 'sosyal' | 'fen'>) => {
     return Math.floor(100 + (s.turkce * 3.3) + (s.matematik * 3.3) + (s.sosyal * 3.4) + (s.fen * 3.4));
   };
   const handleAddScore = () => {
     if (!userId) return;
     const totalNet = Number(form.turkce) + Number(form.matematik) + Number(form.sosyal) + Number(form.fen);
-    createScore.mutate({ userId, date: new Date().toISOString(), ...form, sosyal: form.sosial, totalNet }, {
-      onSuccess: () => { setIsOpen(false); setForm({ turkce: 0, matematik: 0, sosial: 0, fen: 0 }); }
+    createScore.mutate({ 
+      userId, 
+      date: new Date().toISOString(), 
+      ...form, 
+      totalNet 
+    }, {
+      onSuccess: () => { 
+        setIsOpen(false); 
+        setForm({ turkce: 0, matematik: 0, sosyal: 0, fen: 0 }); 
+      }
     });
   };
+  const subjectKeys = [
+    { label: 'Türkçe', key: 'turkce' as const },
+    { label: 'Matematik', key: 'matematik' as const },
+    { label: 'Sosyal', key: 'sosyal' as const },
+    { label: 'Fen', key: 'fen' as const }
+  ];
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-black text-playful-dark">Gelişim & Başarı</h1>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogTrigger asChild><button className="playful-button bg-playful-yellow"><Plus className="w-5 h-5" /> Deneme Ekle</button></DialogTrigger>
+          <DialogTrigger asChild>
+            <button className="playful-button bg-playful-yellow">
+              <Plus className="w-5 h-5" /> Deneme Ekle
+            </button>
+          </DialogTrigger>
           <DialogContent className="border-4 border-playful-dark rounded-[2rem]">
-            <DialogHeader><DialogTitle className="text-2xl font-black">Netlerini Gir</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <h2 className="text-2xl font-black">Netlerini Gir</h2>
+            </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
-              {['Türkçe', 'Matematik', 'Sosyal', 'Fen'].map(l => (
-                <div key={l} className="space-y-1">
-                  <label className="font-bold text-sm">{l}</label>
-                  <Input type="number" step="0.25" className="playful-input" onChange={(e) => setForm({...form, [l.toLowerCase().replace('ü','u')]: Number(e.target.value)})} />
+              {subjectKeys.map(({ label, key }) => (
+                <div key={key} className="space-y-1">
+                  <label className="font-bold text-sm">{label}</label>
+                  <Input 
+                    type="number" 
+                    step="0.25" 
+                    className="playful-input" 
+                    value={form[key]}
+                    onChange={(e) => setForm({...form, [key]: Number(e.target.value)})} 
+                  />
                 </div>
               ))}
             </div>
@@ -61,10 +93,10 @@ export function ProgressPage() {
         </TabsList>
         <TabsContent value="stats" className="space-y-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {['Türkçe', 'Matematik', 'Sosyal', 'Fen'].map((l, i) => (
-              <PlayfulCard key={l} className="text-center py-4 border-playful-dark shadow-playful">
-                <p className="text-[10px] font-black uppercase text-muted-foreground">{l}</p>
-                <p className="text-3xl font-black">{Object.values(latestScore)[i+2] || 0}</p>
+            {subjectKeys.map(({ label, key }) => (
+              <PlayfulCard key={key} className="text-center py-4 border-playful-dark shadow-playful">
+                <p className="text-[10px] font-black uppercase text-muted-foreground">{label}</p>
+                <p className="text-3xl font-black">{latestScore[key] || 0}</p>
               </PlayfulCard>
             ))}
           </div>
@@ -72,7 +104,13 @@ export function ProgressPage() {
             {isLoading ? <div className="flex justify-center items-center h-full"><Loader2 className="animate-spin" /></div> :
              scores?.length ? (
                <ResponsiveContainer width="100%" height="100%">
-                 <LineChart data={chartData}><CartesianGrid strokeDasharray="5 5" vertical={false} /><XAxis dataKey="formattedDate" /><YAxis domain={[0, 120]} /><Tooltip /><Line type="monotone" dataKey="totalNet" stroke="#1e293b" strokeWidth={6} dot={{ r: 8, fill: '#1e293b' }} /></LineChart>
+                 <LineChart data={chartData}>
+                   <CartesianGrid strokeDasharray="5 5" vertical={false} />
+                   <XAxis dataKey="formattedDate" />
+                   <YAxis domain={[0, 120]} />
+                   <Tooltip />
+                   <Line type="monotone" dataKey="totalNet" stroke="#1e293b" strokeWidth={6} dot={{ r: 8, fill: '#1e293b' }} />
+                 </LineChart>
                </ResponsiveContainer>
              ) : <div className="flex flex-col items-center justify-center h-full text-slate-300 font-bold"><TrendingUp className="w-12 h-12 mb-2" />Veri Bekleniyor</div>}
           </PlayfulCard>

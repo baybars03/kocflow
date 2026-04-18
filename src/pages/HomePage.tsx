@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Star, Zap, ChevronRight, Loader2, Flame, TrendingUp, Info, X, Rocket, Sparkles, Plus } from 'lucide-react';
+import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTasks, useStats, useScores, useRecommendations } from '@/hooks/use-tyt-api';
 import { LevelProgress } from '@/components/ui/LevelProgress';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { differenceInDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
+import type { TYTSubject } from '@shared/types';
 export function HomePage() {
   const navigate = useNavigate();
   const userId = useAuth((s) => s.user?.id);
   const userRole = useAuth((s) => s.user?.role);
-  const [showGuide, setShowGuide] = useState(true);
   const targetDate = new Date('2025-06-14');
   const now = new Date();
   const examPassed = isAfter(now, targetDate);
   const remainingDays = differenceInDays(targetDate, now);
-  const { data: tasks, isLoading: tasksLoading, createTask } = useTasks(userId);
+  const { data: tasks, createTask } = useTasks(userId);
   const { data: stats } = useStats(userId);
   const { data: scores } = useScores(userId);
   const { data: recommendations, isLoading: recsLoading } = useRecommendations(userId);
@@ -26,11 +26,10 @@ export function HomePage() {
     if (userRole === 'koç') navigate('/coach');
     else if (userRole === 'admin') navigate('/admin');
   }, [userRole, navigate]);
-  const dailyTasks = tasks?.slice(0, 3) || [];
   const avgNet = scores && scores.length > 0
     ? (scores.reduce((acc, s) => acc + s.totalNet, 0) / scores.length).toFixed(1)
     : '0';
-  const handleAddRec = (subject: any, topic: string) => {
+  const handleAddRec = (subject: TYTSubject, topic: string) => {
     if (!userId) return;
     createTask.mutate({ userId, subject, topic, done: false }, {
       onSuccess: () => toast.success(`${topic} görevin eklendi! ✨`)
@@ -64,7 +63,7 @@ export function HomePage() {
                     <span className={cn("text-[10px] font-black uppercase px-2 py-0.5 rounded border-2 border-playful-dark", SUBJECT_COLORS[rec.subject])}>{rec.subject}</span>
                     <h3 className="text-xl font-black my-2">{rec.topic}</h3>
                     <p className="text-xs font-bold text-muted-foreground mb-4 leading-tight">{rec.reason}</p>
-                    <button 
+                    <button
                       onClick={() => handleAddRec(rec.subject, rec.topic)}
                       className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] transition-all"
                     >
