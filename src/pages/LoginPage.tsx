@@ -23,7 +23,7 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login({ email: loginEmail, password: loginPassword });
-      toast.success('Giriş yapıldı! Hoş geldin. 🚀');
+      toast.success('KocFlow\'a giriş yapıldı! Akış başlıyor. 🚀');
       navigate('/');
     } catch (err) {
       toast.error('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
@@ -34,7 +34,6 @@ export function LoginPage() {
   const handleDemoLogin = (demoEmail: string) => {
     setEmail(demoEmail);
     setPassword('demo123');
-    // Immediate submission with provided credentials
     handleSubmit(undefined, demoEmail, 'demo123');
   };
   const demoLogins = [
@@ -43,22 +42,22 @@ export function LoginPage() {
     { role: 'Admin', email: 'admin@kampus.com', icon: ShieldCheck, color: 'bg-playful-yellow' },
   ];
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-yellow p-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-yellow p-4 py-12 font-sans">
       <div className="w-full max-w-md space-y-8">
         <PlayfulCard className="bg-white">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-playful-red border-4 border-playful-dark rounded-2xl text-white text-3xl font-black mb-4 shadow-playful">
-              T
+              K
             </div>
             <h1 className="text-3xl font-black text-playful-dark">Tekrar Hoş Geldin!</h1>
-            <p className="font-bold text-muted-foreground">Kampüse giriş yap ve çalışmaya başla.</p>
+            <p className="font-bold text-muted-foreground">KocFlow akışına giriş yap ve çalışmaya başla.</p>
           </div>
           <form onSubmit={(e) => handleSubmit(e)} className="space-y-6" noValidate>
             <div className="space-y-2">
               <label className="font-bold text-playful-dark">E-posta Adresi</label>
               <Input
                 type="email"
-                placeholder="ogrenci@kampus.com"
+                placeholder="merhaba@kocflow.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="playful-input h-14"
@@ -90,7 +89,7 @@ export function LoginPage() {
             <p className="font-bold text-muted-foreground">
               Hesabın yok mu?{' '}
               <Link to="/signup" className="text-playful-red hover:underline">
-                Hemen Kaydol!
+                KocFlow'a Katıl!
               </Link>
             </p>
           </div>
@@ -122,9 +121,6 @@ export function LoginPage() {
               </button>
             ))}
           </div>
-          <p className="text-center text-xs font-bold text-playful-dark/50">
-            Demo için sadece butona basmanız yeterlidir. Şifre: <span className="text-playful-dark">demo123</span>
-          </p>
         </div>
       </div>
     </div>

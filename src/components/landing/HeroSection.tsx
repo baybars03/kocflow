@@ -18,7 +18,7 @@ export function HeroSection() {
           className="bg-white border-4 border-playful-dark px-6 py-2 rounded-full font-black text-xs md:text-sm uppercase tracking-[0.15em] shadow-playful inline-flex items-center gap-3"
         >
           <AlarmClock className="w-5 h-5 text-playful-red" />
-          YKS Maratonuna Son {days} Gün
+          Geleceğin İçin Geri Sayım: {days} Gün
         </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -26,9 +26,9 @@ export function HeroSection() {
           transition={{ delay: 0.2 }}
           className="flex gap-2"
         >
-          {['TYT', 'LGS', 'KPSS', 'YDT'].map((exam) => (
-            <span key={exam} className="bg-playful-yellow border-2 border-playful-dark px-3 py-0.5 rounded-lg text-[10px] font-black shadow-playful-active">
-              {exam}
+          {['K-12', 'Üniversite', 'Sınav Hazırlık', 'AI Mentörlük'].map((tag) => (
+            <span key={tag} className="bg-playful-yellow border-2 border-playful-dark px-3 py-0.5 rounded-lg text-[10px] font-black shadow-playful-active">
+              {tag}
             </span>
           ))}
         </motion.div>
@@ -38,29 +38,29 @@ export function HeroSection() {
         animate={{ y: 0, opacity: 1 }}
         className="text-5xl md:text-8xl font-black text-playful-dark tracking-tighter leading-[0.9] uppercase"
       >
-        İlkokul, Ortaokul, Lise <br />
-        <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">AI Koçla Başarı!</span>
+        Öğrenci Akışını <br />
+        <span className="text-playful-teal drop-shadow-[3px_3px_0px_#1e293b]">KocFlow İle Yönet!</span>
       </motion.h1>
       <p className="text-lg md:text-2xl font-bold text-muted-foreground max-w-2xl mx-auto leading-tight">
-        Tüm K-12 seviyeleri için <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">yapay zeka destekli</span> rehberlik. Sınavları stres değil, bir oyun haline getiriyoruz!
+        Türkiye'nin en gelişmiş <span className="text-playful-dark underline decoration-playful-red decoration-4 underline-offset-2">AI destekli</span> rehberlik ve koçluk ekosistemi. Başarı bir şans değil, bir akıştır.
       </p>
       <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-4">
         <Link
           to="/signup"
           className="playful-button bg-playful-red text-white text-2xl md:text-3xl py-6 md:py-8 px-10 md:px-14 group min-w-[280px]"
         >
-          Hemen Başla! <Rocket className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ml-2" />
+          KocFlow'a Katıl! <Rocket className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ml-2" />
         </Link>
         <Link
-          to="/quiz"
+          to="/marketplace"
           className="playful-button bg-playful-yellow text-playful-dark text-lg md:text-xl py-5 md:py-6 px-8 md:px-10 group min-w-[240px]"
         >
-          Deneme Çöz <Zap className="w-5 h-5 fill-playful-dark text-playful-dark group-hover:scale-110 transition-transform ml-2" />
+          Koçunu Ara <Zap className="w-5 h-5 fill-playful-dark text-playful-dark group-hover:scale-110 transition-transform ml-2" />
         </Link>
       </div>
       <div className="flex items-center justify-center gap-6 pt-10 opacity-40 grayscale">
-         <div className="flex items-center gap-2 font-black text-xs uppercase"><GraduationCap className="w-4 h-4" /> MEB Müfredat Uyumlu</div>
-         <div className="flex items-center gap-2 font-black text-xs uppercase"><Zap className="w-4 h-4" /> Anlık Geri Bildirim</div>
+         <div className="flex items-center gap-2 font-black text-xs uppercase"><GraduationCap className="w-4 h-4" /> Uzman Koç Ağı</div>
+         <div className="flex items-center gap-2 font-black text-xs uppercase"><Zap className="w-4 h-4" /> AI Destekli Planlar</div>
       </div>
     </section>
   );

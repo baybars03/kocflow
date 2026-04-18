@@ -18,27 +18,23 @@ export function LandingPage() {
   });
   return (
     <div className="space-y-16 md:space-y-24 pb-32">
-      {/* 1. HERO - Hook */}
       <HeroSection />
-      {/* 2. PROOF - Stats */}
       <div className="max-w-7xl mx-auto px-4">
         <StatsSection stats={stats} />
       </div>
-      {/* 3. AI CORE FEATURE - Spotlight */}
+      <PopularCoaches />
       <AIKocFeature />
-      {/* 4. ENGAGEMENT - Practice Quiz Teaser */}
       <PracticeQuizPreview />
-      {/* 5. VALUE PROP - Features */}
       <section className="space-y-16 py-12 px-4 max-w-7xl mx-auto">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">Neden TYT Kampüs? 🤔</h2>
-          <p className="font-bold text-muted-foreground text-lg md:text-xl">Sadece bir uygulama değil, bir ekosistem.</p>
+          <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">Neden KocFlow? 🤔</h2>
+          <p className="font-bold text-muted-foreground text-lg md:text-xl">Sadece bir uygulama değil, senin başarı akışın.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: "Kişiselleştirilmiş", desc: "Eksiklerini saniyeler içinde analiz eder, en verimli rotayı çizer.", icon: Zap, color: "bg-playful-red" },
-            { title: "Birebir Destek", desc: "Seçtiğin uzman koçla hedeflerini her hafta masaya yatır.", icon: Target, color: "bg-playful-teal" },
-            { title: "Lvl Atla!", desc: "Puan topla, rütbe kazan, sınavı bir yük olarak değil oyun olarak gör.", icon: Trophy, color: "bg-playful-yellow" },
+            { title: "Kişiselleştirilmiş", desc: "Eksiklerini saniyeler içinde analiz eder, en verimli rotayı saniyeler içinde çizer.", icon: Zap, color: "bg-playful-red" },
+            { title: "Birebir Destek", desc: "Seçtiğin uzman koçla hedeflerini her hafta masaya yatır ve akışta kal.", icon: Target, color: "bg-playful-teal" },
+            { title: "Flow Atla!", desc: "Puan topla, rütbe kazan, eğitimi bir yük olarak değil oyun olarak gör.", icon: Trophy, color: "bg-playful-yellow" },
           ].map((f, i) => (
             <PlayfulCard key={i} className="bg-white space-y-6 group border-playful-dark shadow-playful hover:-translate-y-2 transition-all">
               <div className={`${f.color} w-16 h-16 rounded-2xl border-4 border-playful-dark flex items-center justify-center text-white shadow-playful group-hover:rotate-6 transition-transform`}>
@@ -50,24 +46,19 @@ export function LandingPage() {
           ))}
         </div>
       </section>
-      {/* 6. SOCIAL PROOF - Testimonials */}
       <TestimonialCarousel />
-      {/* 7. MARKETPLACE PREVIEW */}
-      <PopularCoaches />
-      {/* 8. PRICING */}
       <PricingSection />
-      {/* 9. FINAL CTA */}
       <section className="px-4 max-w-6xl mx-auto">
         <PlayfulCard className="bg-playful-dark text-white p-12 md:p-20 text-center space-y-10 border-playful-dark shadow-playful relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-playful-red/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-playful-teal/20 blur-3xl rounded-full translate-y-1/2 -translate-x-1/2" />
           <div className="relative space-y-6">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">
-              Başarı Hikayene <br />
-              <span className="text-playful-yellow underline decoration-playful-yellow decoration-4 underline-offset-8">Bugün Başla!</span>
+              Başarı Akışına <br />
+              <span className="text-playful-yellow underline decoration-playful-yellow decoration-4 underline-offset-8">Bugün Katıl!</span>
             </h2>
             <p className="text-lg md:text-xl font-bold text-white/70 max-w-2xl mx-auto">
-              Binlerce öğrenci arasına katıl, sınav maratonunda yalnız kalma.
+              Binlerce öğrenci ve uzman koç KocFlow ile zirveye yürüyor.
             </p>
           </div>
           <div className="relative flex flex-col sm:flex-row gap-6 justify-center pt-8">
@@ -80,17 +71,16 @@ export function LandingPage() {
           </div>
         </PlayfulCard>
       </section>
-      {/* FOOTER */}
       <footer className="pt-20 border-t-8 border-playful-dark text-center space-y-8 px-4">
-        <div className="text-4xl font-black tracking-tighter uppercase italic bg-playful-yellow border-4 border-playful-dark inline-block px-6 py-2 shadow-playful">TYT KAMPÜS</div>
+        <div className="text-4xl font-black tracking-tighter uppercase italic bg-playful-yellow border-4 border-playful-dark inline-block px-6 py-2 shadow-playful">KOCFLOW</div>
         <div className="flex flex-wrap gap-x-12 gap-y-4 justify-center font-black text-lg uppercase tracking-tighter text-muted-foreground">
           <Link to="/marketplace" className="hover:text-playful-red transition-colors">Marketplace</Link>
           <Link to="/login" className="hover:text-playful-teal transition-colors">Giriş Yap</Link>
           <Link to="/signup" className="hover:text-playful-yellow transition-colors">Hemen Kaydol</Link>
-          <Link to="/" className="hover:text-playful-dark transition-colors">Yardım</Link>
+          <Link to="/" className="hover:text-playful-dark transition-colors">Destek</Link>
         </div>
         <p className="text-xs font-black text-muted-foreground uppercase tracking-widest pb-10">
-          © 2024 TYT Kampüs. Tüm hakları saklıdır. 🚀 Başarıya giden en kısa yol.
+          © 2025 KocFlow. Tüm hakları saklıdır. 🚀 Akışta kal, başarıya ulaş.
         </p>
       </footer>
     </div>

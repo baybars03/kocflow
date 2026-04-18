@@ -23,7 +23,7 @@ export function SignupPage() {
     setLoading(true);
     try {
       await signup({ email, role });
-      toast.success('Hesabın oluşturuldu! Kampüse hoş geldin. ✨');
+      toast.success('Hesabın oluşturuldu! KocFlow akışına hoş geldin. ✨');
       navigate('/');
     } catch (err) {
       toast.error('Kayıt başarısız oldu.');
@@ -37,12 +37,12 @@ export function SignupPage() {
     { id: 'admin' as UserRole, label: 'Admin', icon: ShieldCheck, color: 'bg-playful-yellow' },
   ];
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-teal p-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-playful-teal p-4 py-12 font-sans">
       <div className="w-full max-w-2xl space-y-8">
         <PlayfulCard className="bg-white">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black text-playful-dark">Kampüse Katıl! 🎓</h1>
-            <p className="font-bold text-muted-foreground">Yeni bir hesap oluştur ve hedeflerine koş.</p>
+            <h1 className="text-3xl font-black text-playful-dark">KocFlow'a Katıl! 🎓</h1>
+            <p className="font-bold text-muted-foreground">Yeni bir hesap oluştur ve hedeflerine doğru ak.</p>
           </div>
           <form onSubmit={handleSignup} className="space-y-8" noValidate>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -65,7 +65,7 @@ export function SignupPage() {
                 <label className="font-bold">E-posta Adresi</label>
                 <Input
                   type="email"
-                  placeholder="merhaba@kampus.com"
+                  placeholder="basarili@kocflow.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="playful-input h-14"
@@ -87,7 +87,7 @@ export function SignupPage() {
             >
               {loading ? <Loader2 className="animate-spin" /> : (
                 <>
-                  Kayıt Ol <UserPlus className="ml-2" />
+                  Akışı Başlat <UserPlus className="ml-2" />
                 </>
               )}
             </Button>
@@ -107,15 +107,15 @@ export function SignupPage() {
               <Users className="text-playful-dark w-6 h-6" strokeWidth={3} />
             </div>
             <div>
-              <h4 className="font-black text-lg leading-none">Test Etmek İster Misin?</h4>
-              <p className="text-sm font-medium text-white/70">Hazır hesaplarla hızlıca göz at.</p>
+              <h4 className="font-black text-lg leading-none">Keşfetmek Mi İstiyorsun?</h4>
+              <p className="text-sm font-medium text-white/70">KocFlow'u hemen incele.</p>
             </div>
           </div>
           <Link
-            to="/login"
+            to="/marketplace"
             className="flex items-center gap-2 bg-playful-yellow text-playful-dark px-4 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-1 transition-all"
           >
-            Hızlı Giriş <ArrowRight className="w-4 h-4" />
+            Marketplace <ArrowRight className="w-4 h-4" />
           </Link>
         </PlayfulCard>
       </div>

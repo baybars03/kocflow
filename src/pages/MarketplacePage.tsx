@@ -1,45 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api-client';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { Search, Filter, Star, Users, ArrowRight, Loader2, CheckCircle, GraduationCap } from 'lucide-react';
+import { Search, Star, Users, ArrowRight, Loader2, CheckCircle, GraduationCap } from 'lucide-react';
 import type { CoachProfile } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 export function MarketplacePage() {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  // Initialize search from URL params
+  useEffect(() => {
+    const query = searchParams.get('q');
+    if (query) setSearch(query);
+  }, [searchParams]);
   const { data: coaches, isLoading } = useQuery({
     queryKey: ['coaches'],
     queryFn: () => api<CoachProfile[]>('/api/coaches'),
   });
   const specialties = Array.from(new Set(coaches?.flatMap(c => c.specialties) || []));
   const filteredCoaches = coaches?.filter(c => {
-    const matchesSearch = c.displayName.toLowerCase().includes(search.toLowerCase()) || 
-                         c.specialties.some(s => s.toLowerCase().includes(search.toLowerCase()));
+    const matchesSearch = c.displayName.toLowerCase().includes(search.toLowerCase()) ||
+                         c.specialties.some(s => s.toLowerCase().includes(search.toLowerCase())) ||
+                         c.bio.toLowerCase().includes(search.toLowerCase());
     const matchesSpecialty = !selectedSpecialty || c.specialties.includes(selectedSpecialty);
     return matchesSearch && matchesSpecialty;
   });
   return (
     <div className="space-y-12 animate-in fade-in duration-500">
       <div className="space-y-4">
-        <h1 className="text-5xl font-black tracking-tight">Koç Marketplace 🏢</h1>
-        <p className="text-lg font-bold text-muted-foreground">Başarıya giden yolda sana rehberlik edecek en iyi koçu bul.</p>
+        <h1 className="text-5xl font-black tracking-tight">KocFlow Marketplace 🏢</h1>
+        <p className="text-lg font-bold text-muted-foreground">Başarıya giden yolda sana rehberlik edecek en iyi akışı ve koçu bul.</p>
       </div>
-      {/* Filter Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+        <div className="relative flex-1 w-full group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within:text-playful-teal transition-colors" />
           <input
             type="text"
-            placeholder="Koç ismi veya branş ara..."
+            placeholder="Koç ismi, branş veya uzmanlık ara..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="playful-input w-full pl-12 h-14 text-lg"
           />
         </div>
-        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2">
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 no-scrollbar">
           <button
             onClick={() => setSelectedSpecialty(null)}
             className={cn(
@@ -104,7 +110,7 @@ export function MarketplacePage() {
                     <Users className="w-4 h-4" /> {coach.studentCount} Öğrenci
                   </div>
                   <Link to={`/coach/${coach.id}`} className="playful-button bg-playful-teal text-white py-2 px-4 text-sm group-hover:-translate-x-1">
-                    Profili Gör <ArrowRight className="w-4 h-4" />
+                    İncele <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 </div>
               </div>
@@ -114,6 +120,7 @@ export function MarketplacePage() {
             <div className="col-span-full py-20 text-center space-y-4">
                <GraduationCap className="w-20 h-20 mx-auto text-slate-200" />
                <p className="text-2xl font-black text-slate-400">Aradığın kriterlerde koç bulunamadı.</p>
+               <button onClick={() => { setSearch(''); setSelectedSpecialty(null); }} className="text-playful-teal font-black underline">Aramayı temizle</button>
             </div>
           )}
         </div>

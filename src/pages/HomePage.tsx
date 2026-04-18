@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown, ShieldAlert } from 'lucide-react';
+import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
@@ -41,31 +41,31 @@ export function HomePage() {
   const handleAddRec = (subject: TYTSubject, topic: string) => {
     if (!userId) return;
     createTask.mutate({ userId, subject, topic, done: false }, {
-      onSuccess: () => toast.success(`${topic} görevin başarıyla eklendi! ✨`)
+      onSuccess: () => toast.success(`${topic} akışına eklendi! ✨`)
     });
   };
   const getGreeting = () => {
-    if (userRole === 'admin') return 'Sistem Yöneticisi Paneli 🛠️';
-    if (userRole === 'koç') return `Hoş Geldiniz, ${userEmail?.split('@')[0]} 👨‍🏫`;
+    if (userRole === 'admin') return 'KocFlow Admin 🛠️';
+    if (userRole === 'koç') return `Hoş Geldin Koç, ${userEmail?.split('@')[0]}!`;
     return 'Selam Şampiyon! 👋';
   };
   if (!userRole || (userRole !== 'öğrenci' && (userRole === 'koç' || userRole === 'admin'))) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 gap-4">
+      <div className="flex flex-col items-center justify-center p-20 gap-4 font-sans">
         <Loader2 className="w-12 h-12 animate-spin text-playful-teal" />
-        <p className="font-black text-xl">Doğru panele yönlendiriliyorsun...</p>
+        <p className="font-black text-xl">KocFlow akışı yükleniyor...</p>
       </div>
     );
   }
   return (
-    <div {...swipeHandlers} className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-12">
+    <div {...swipeHandlers} className="space-y-8 animate-in fade-in duration-500 pb-20 md:pb-12 font-sans">
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between no-print">
         <div className="space-y-2 text-center md:text-left">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-playful-dark tracking-tighter">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-playful-dark tracking-tighter uppercase">
             {getGreeting()}
           </h1>
           <p className="text-lg md:text-xl font-bold text-muted-foreground italic">
-            {examPassed ? 'Büyük gün geldi çattı! Başarılar dileriz.' : 'Bugün yeni bir rekor kırmaya ne dersin?'}
+            KocFlow ile bugün sınırlarını zorlamaya hazır mısın?
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -76,7 +76,7 @@ export function HomePage() {
             "flex flex-col items-center py-4 px-8 border-playful-dark shadow-playful min-w-[140px]",
             examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white"
           )}>
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">TYT Maratonu</span>
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Başarı Maratonu</span>
             <span className="text-4xl lg:text-5xl font-black leading-none my-1">{remainingDays}</span>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-80">GÜN KALDI</span>
           </PlayfulCard>
@@ -85,8 +85,8 @@ export function HomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
           <div className="space-y-4 no-print">
-             <h2 className="text-2xl font-black flex items-center gap-2 px-2">
-               <Sparkles className="w-6 h-6 text-playful-yellow fill-current" /> Sana Özel Öneriler
+             <h2 className="text-2xl font-black flex items-center gap-2 px-2 uppercase">
+               <Sparkles className="w-6 h-6 text-playful-yellow fill-current" /> AI Akış Önerileri
              </h2>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                {recsLoading ? (
@@ -108,13 +108,13 @@ export function HomePage() {
                         onClick={() => handleAddRec(rec.subject, rec.topic)}
                         className="w-full flex items-center justify-center gap-2 bg-playful-teal text-white font-black py-2.5 rounded-xl border-2 border-playful-dark shadow-playful-active hover:translate-y-[-2px] active:translate-y-0 active:shadow-none transition-all"
                       >
-                        <Plus className="w-4 h-4" strokeWidth={4} /> Hedefe Ekle
+                        <Plus className="w-4 h-4" strokeWidth={4} /> Akışa Ekle
                       </button>
                     </PlayfulCard>
                   ))
                ) : (
                  <div className="col-span-full p-8 border-4 border-dashed border-slate-200 rounded-3xl text-center font-bold text-slate-400">
-                   Öneriler hazırlanıyor... Deneme netlerini girerek AI Koç'u eğitebilirsin!
+                   Akış önerileri hazırlanıyor... Deneme netlerini girerek AI Mentörünü eğit!
                  </div>
                )}
              </div>
@@ -126,7 +126,7 @@ export function HomePage() {
                   <Zap className="w-7 h-7 fill-current" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight leading-none mb-1">Seviye Gelişimi</h3>
+                  <h3 className="text-2xl font-black tracking-tight leading-none mb-1 uppercase">Akış Gelişimi</h3>
                   <p className="text-sm font-bold text-muted-foreground">{stats?.pomodoroSessions || 0} Odaklanma Seansı</p>
                 </div>
               </div>
@@ -149,34 +149,15 @@ export function HomePage() {
             <span className="text-xs font-black uppercase tracking-widest opacity-80">Genel Net Ortalaması</span>
             <span className="text-6xl font-black my-2 tracking-tighter">{avgNet}</span>
             <div className="text-[10px] font-black uppercase px-3 py-1 bg-white/30 border border-playful-dark/10 rounded-full">
-              {scores?.length || 0} Deneme Baz Alındı
+              {scores?.length || 0} Deneme Analiz Edildi
             </div>
           </PlayfulCard>
           <PlayfulCard className="bg-white border-playful-dark shadow-playful p-6 no-print">
              <div className="flex items-center gap-3 mb-3">
                <Star className="w-6 h-6 text-playful-red fill-current" />
-               <p className="font-black text-sm uppercase tracking-widest">Günün Motivasyonu</p>
+               <p className="font-black text-sm uppercase tracking-widest">KocFlow Motivasyonu</p>
              </div>
              <p className="font-bold text-lg leading-relaxed italic">"{MOCK_QUOTE}"</p>
-          </PlayfulCard>
-          <PlayfulCard className="bg-playful-dark text-white p-6 border-playful-dark shadow-playful hidden lg:block">
-            <h4 className="font-black text-xl mb-2">Hızlı Erişim 🚀</h4>
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate('/tasks')}
-                className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
-              >
-                <span className="font-bold">Görevlerim</span>
-                <Plus className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => navigate('/progress')}
-                className="w-full text-left p-3 rounded-xl border-2 border-white/10 hover:bg-white/5 transition-all flex items-center justify-between"
-              >
-                <span className="font-bold">Başarı Takibi</span>
-                <TrendingUp className="w-4 h-4" />
-              </button>
-            </div>
           </PlayfulCard>
         </div>
       </div>
