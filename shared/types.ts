@@ -3,22 +3,26 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-
-// Minimal real-world chat example types (shared by frontend and worker)
-export interface User {
+export type TYTSubject = 'Matematik' | 'Türkçe' | 'Sosyal' | 'Fen';
+export interface TYTTask {
   id: string;
-  name: string;
+  subject: TYTSubject;
+  topic: string;
+  done: boolean;
+  createdAt: number;
 }
-
-export interface Chat {
+export interface DenemeScore {
   id: string;
-  title: string;
+  date: string; // ISO format
+  turkce: number;
+  matematik: number;
+  sosyal: number;
+  fen: number;
+  totalNet: number;
 }
-
-export interface ChatMessage {
-  id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number; // epoch millis
+export interface UserStats {
+  level: number;
+  points: number;
+  completedTasks: number;
+  totalTasks: number;
 }
