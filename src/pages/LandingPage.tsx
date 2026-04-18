@@ -14,8 +14,10 @@ import { Link } from 'react-router-dom';
 import { Zap, Target, Trophy, MessageSquare, Rocket } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 export function LandingPage() {
-  const user = useAuth((s) => s.user);
   const isHydrated = useAuth((s) => s.isHydrated);
+  const userRole = useAuth((s) => s.user?.role);
+  const userEmail = useAuth((s) => s.user?.email);
+  const isLoggedIn = !!userEmail;
   if (!isHydrated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -23,13 +25,11 @@ export function LandingPage() {
       </div>
     );
   }
-  const role = user?.role;
-  const isLoggedIn = !!user;
   return (
     <div className="space-y-16 md:space-y-24 pb-32 overflow-x-hidden">
       <HeroSection />
       <AnimatePresence mode="wait">
-        {isLoggedIn && role === 'öğrenci' && (
+        {isLoggedIn && userRole === 'öğrenci' && (
           <motion.div
             key="student-teaser"
             initial={{ opacity: 0, y: 20 }}
@@ -39,7 +39,7 @@ export function LandingPage() {
             <StudentLandingTeaser />
           </motion.div>
         )}
-        {isLoggedIn && role === 'koç' && (
+        {isLoggedIn && userRole === 'koç' && (
           <motion.div
             key="coach-teaser"
             initial={{ opacity: 0, y: 20 }}

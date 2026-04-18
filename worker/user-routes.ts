@@ -2,9 +2,8 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { TaskEntity, ScoreEntity, UserEntity, ChatMessageEntity, NotificationEntity, CoachProfileEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats, ChatMessage, Notification, CoachProfile } from "@shared/types";
+import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats, ChatMessage, Notification } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  // LANDING STATS
   app.get('/api/landing/stats', async (c) => {
     return ok(c, {
       activeStudents: 1240,
@@ -13,28 +12,26 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       successRate: 92
     });
   });
-  // QUIZ ENDPOINTS
   app.post('/api/quizzes/complete', async (c) => {
     const { userId, xpEarned } = await c.req.json();
     if (!userId) return bad(c, 'userId required');
     const userEntity = new UserEntity(c.env, userId);
-    const sessionBoost = Math.max(1, Math.floor(xpEarned / 100));
+    const sessionBoost = Math.max(1, Math.floor((xpEarned || 0) / 100));
     await userEntity.mutate(s => ({
       ...s,
       pomodoroSessions: (s.pomodoroSessions || 0) + sessionBoost
     }));
     await NotificationEntity.create(c.env, {
-      id: crypto.randomUUID(), 
-      userId, 
+      id: crypto.randomUUID(),
+      userId,
       title: "Deneme Bitirildi! 🏆",
       message: `Harika bir deneme çıkardın. +${xpEarned} XP kazandın!`,
-      type: 'streak', 
-      read: false, 
+      type: 'streak',
+      read: false,
       createdAt: Date.now()
     });
     return ok(c, { xpEarned });
   });
-  // COACH MARKETPLACE
   app.get('/api/coaches', async (c) => {
     await CoachProfileEntity.ensureSeed(c.env);
     const res = await CoachProfileEntity.list(c.env);
@@ -43,7 +40,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/coaches/:id', async (c) => {
     const id = c.req.param('id');
     const coach = await new CoachProfileEntity(c.env, id).getState();
-    if (!coach.id) return notFound(c, 'Coach not found');
+    if (!coach || !coach.id) return notFound(c, 'Coach not found');
     return ok(c, coach);
   });
   app.post('/api/coaches/assign', async (c) => {
@@ -63,7 +60,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     return ok(c, updatedUser);
   });
-  // COACH STUDENT MANAGEMENT
   app.get('/api/coach/students/:coachId', async (c) => {
     const coachId = c.req.param('coachId');
     const usersRes = await UserEntity.list(c.env);
@@ -74,9 +70,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const latestScore = studentScores.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       return {
         studentId: student.id,
-        email: student.email,
+        email: student.email || 'isimsiz@kampus.com',
         level: Math.floor((student.pomodoroSessions || 0) / 5) + 1,
-        streak: 1, // Mock streak
+        streak: 1,
         latestNet: latestScore?.totalNet || 0,
         lowProgressAlert: (student.pomodoroSessions || 0) < 2
       };
@@ -86,7 +82,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/coach/assign-bulk', async (c) => {
     const { studentIds, subject, topic } = await c.req.json() as BulkTaskRequest;
     if (!studentIds?.length || !topic) return bad(c, 'Invalid request');
-    const creations = studentIds.map(sid => 
+    const creations = studentIds.map(sid =>
       TaskEntity.create(c.env, {
         id: crypto.randomUUID(),
         userId: sid,
@@ -99,13 +95,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await Promise.all(creations);
     return ok(c, { success: true, assignedCount: studentIds.length });
   });
-  // CHAT ENDPOINTS
   app.get('/api/chat/:otherUserId', async (c) => {
     const otherUserId = c.req.param('otherUserId');
     const viewerId = c.req.query('viewerId');
     if (!viewerId) return bad(c, 'viewerId required');
     const res = await ChatMessageEntity.list(c.env);
-    const conversation = res.items.filter(m => 
+    const conversation = res.items.filter(m =>
       (m.senderId === viewerId && m.receiverId === otherUserId) ||
       (m.senderId === otherUserId && m.receiverId === viewerId)
     ).sort((a, b) => a.timestamp - b.timestamp);
@@ -120,9 +115,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, await ChatMessageEntity.create(c.env, msg));
   });
-  // AI TUTOR ENDPOINT
   app.post('/api/ai/ask', async (c) => {
-    const { message } = await c.req.json();
     const responses = [
       "Harika bir soru! TYT Matematik'te bu tarz soruları çözmek için önce temel kavramları oturtmalısın. 🚀",
       "Netlerini artırmak için her gün en az 20 paragraf çözmeyi ihmal etme. Disiplin her şeydir! ✨",
@@ -132,7 +125,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const randomResponse = responses[Math.floor(Math.random() * responses.length)];
     return ok(c, { content: randomResponse, timestamp: Date.now() });
   });
-  // NOTIFICATION ENDPOINTS
   app.get('/api/notifications/:userId', async (c) => {
     const userId = c.req.param('userId');
     const res = await NotificationEntity.list(c.env);
@@ -143,7 +135,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const entity = new NotificationEntity(c.env, id);
     return ok(c, await entity.mutate(s => ({ ...s, read: true })));
   });
-  // LEADERBOARD
   app.get('/api/leaderboard', async (c) => {
     const usersRes = await UserEntity.list(c.env);
     const scoresRes = await ScoreEntity.list(c.env);
@@ -151,12 +142,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       .filter(u => u.role === 'öğrenci')
       .map(u => {
         const uScores = scoresRes.items.filter(s => s.userId === u.id);
-        const avgNet = uScores.length > 0
+        const avgNetValue = uScores.length > 0
           ? Number((uScores.reduce((acc, s) => acc + (s.totalNet || 0), 0) / uScores.length).toFixed(1))
           : 0;
         return {
-          displayName: u.email.split('@')[0],
-          avgNet,
+          displayName: u.email ? u.email.split('@')[0] : 'Anonim',
+          avgNet: avgNetValue,
           level: Math.floor((u.pomodoroSessions || 0) / 5) + 1,
         };
       })
@@ -164,7 +155,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       .slice(0, 10);
     return ok(c, leaderboard);
   });
-  // POMODORO
   app.post('/api/pomodoro/complete', async (c) => {
     const { userId } = await c.req.json();
     if (!userId) return bad(c, 'userId required');
@@ -184,7 +174,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     return ok(c, updated);
   });
-  // AI RECOMMENDATIONS
   app.get('/api/ai-tasks/:userId', async (c) => {
     const userId = c.req.param('userId');
     const scoresRes = await ScoreEntity.list(c.env);
@@ -201,11 +190,19 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         { subject: 'Türkçe', topic: 'Paragrafta Anlam', reason: 'Sınavın kalbi paragraf, her gün çözmelisin!' }
       ] as Recommendation[]);
     }
+    const sums = { Matematik: 0, Türkçe: 0, Fen: 0, Sosyal: 0 };
+    userScores.forEach(s => {
+      sums.Matematik += s.matematik || 0;
+      sums.Türkçe += s.turkce || 0;
+      sums.Fen += s.fen || 0;
+      sums.Sosyal += s.sosyal || 0;
+    });
+    const counts = userScores.length;
     const averages = {
-      Matematik: userScores.reduce((acc, s) => acc + (s.matematik || 0), 0) / userScores.length,
-      Türkçe: userScores.reduce((acc, s) => acc + (s.turkce || 0), 0) / userScores.length,
-      Fen: userScores.reduce((acc, s) => acc + (s.fen || 0), 0) / userScores.length,
-      Sosyal: userScores.reduce((acc, s) => acc + (s.sosyal || 0), 0) / userScores.length,
+      Matematik: sums.Matematik / counts,
+      Türkçe: sums.Türkçe / counts,
+      Fen: sums.Fen / counts,
+      Sosyal: sums.Sosyal / counts,
     };
     const weakest = Object.entries(averages).sort((a, b) => a[1] - b[1])[0][0] as TYTSubject;
     const topics = library[weakest] || ['Genel Tekrar'];
@@ -216,7 +213,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     }));
     return ok(c, recs);
   });
-  // ADMIN ANALYTICS
   app.get('/api/admin/analytics', async (c) => {
     const users = await UserEntity.list(c.env);
     const tasks = await TaskEntity.list(c.env);
@@ -242,39 +238,35 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const id = c.req.param('id');
     const body = await c.req.json();
     const entity = new UserEntity(c.env, id);
-    const updated = await entity.mutate(s => ({ ...s, ...body }));
-    return ok(c, updated);
+    return ok(c, await entity.mutate(s => ({ ...s, ...body })));
   });
   app.delete('/api/admin/users/:id', async (c) => {
-    const id = c.req.param('id');
-    await UserEntity.delete(c.env, id);
-    return ok(c, { id });
+    await UserEntity.delete(c.env, c.req.param('id'));
+    return ok(c, { success: true });
   });
-  // AUTH
   app.post('/api/auth/login', async (c) => {
     const { email } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
     await UserEntity.ensureSeed(c.env);
     await NotificationEntity.ensureSeed(c.env);
     const users = await UserEntity.list(c.env);
-    const user = users.items.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const user = users.items.find(u => u.email?.toLowerCase() === email.toLowerCase());
     if (!user) return bad(c, 'Kullanıcı bulunamadı');
     return ok(c, { user, token: 'mock-jwt-token-' + user.id });
   });
   app.post('/api/auth/signup', async (c) => {
     const { email, role } = await c.req.json() as SignupRequest;
-    const newUser: User = { 
-      id: crypto.randomUUID(), 
-      email, 
-      role, 
-      coachAssignments: [], 
-      pomodoroSessions: 0, 
-      createdAt: Date.now(), 
-      isPremium: false 
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      email,
+      role,
+      coachAssignments: [],
+      pomodoroSessions: 0,
+      createdAt: Date.now(),
+      isPremium: false
     };
     return ok(c, { user: await UserEntity.create(c.env, newUser), token: 'mock-token' });
   });
-  // TASKS & SCORES CRUD
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');
     const page = await TaskEntity.list(c.env);
@@ -282,13 +274,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/tasks', async (c) => {
     const body = await c.req.json();
-    const task: TYTTask = { 
-      id: crypto.randomUUID(), 
-      userId: body.userId, 
-      subject: body.subject, 
-      topic: body.topic, 
-      done: false, 
-      createdAt: Date.now() 
+    const task: TYTTask = {
+      id: crypto.randomUUID(),
+      userId: body.userId,
+      subject: body.subject,
+      topic: body.topic,
+      done: false,
+      createdAt: Date.now()
     };
     return ok(c, await TaskEntity.create(c.env, task));
   });

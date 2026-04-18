@@ -43,8 +43,16 @@ export const useAuth = create<AuthState>()(
     {
       name: 'tyt-kampus-auth',
       storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true);
+      onRehydrateStorage: (state) => {
+        // Return a callback that runs after rehydration
+        return (rehydratedState, error) => {
+          if (error) {
+            console.error('Auth Rehydration Error:', error);
+          }
+          if (rehydratedState) {
+            rehydratedState.setHydrated(true);
+          }
+        };
       },
     }
   )

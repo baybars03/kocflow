@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Rocket, Zap, AlarmClock, GraduationCap, ArrowRight } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
-const TARGET_DATE = new Date('2025-06-14');
+import { TARGET_DATE } from '@shared/mock-tyt-data';
 export function HeroSection() {
   const [days, setDays] = useState(0);
   const user = useAuth((s) => s.user);
@@ -12,10 +12,10 @@ export function HeroSection() {
   const userEmail = user?.email;
   const isLoggedIn = !!user;
   useEffect(() => {
-    setDays(differenceInDays(TARGET_DATE, new Date()));
+    setDays(Math.max(0, differenceInDays(TARGET_DATE, new Date())));
   }, []);
   const getHeading = () => {
-    if (isLoggedIn) return `Tekrar Hoş Geldin, ${userEmail?.split('@')[0]}!`;
+    if (isLoggedIn) return `Tekrar Hoş Geldin, ${userEmail?.split('@')[0] || 'Kaşif'}!`;
     return "Öğrenci Akışını";
   };
   const getPrimaryCTA = () => {

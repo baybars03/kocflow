@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
+import { MOCK_QUOTE, SUBJECT_COLORS, TARGET_DATE } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
 import { useTasks, useStats, useScores, useRecommendations } from '@/hooks/use-tyt-api';
 import { LevelProgress } from '@/components/ui/LevelProgress';
@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { useSwipeable } from 'react-swipeable';
 import { AITutor } from '@/components/ai/AITutor';
 import type { TYTSubject } from '@shared/types';
-const TARGET_DATE = new Date('2025-06-14');
 export function HomePage() {
   const navigate = useNavigate();
   const userId = useAuth((s) => s.user?.id);
@@ -22,7 +21,7 @@ export function HomePage() {
   const examPassed = isAfter(now, TARGET_DATE);
   const rawDays = differenceInDays(TARGET_DATE, now);
   const remainingDays = Math.max(0, rawDays);
-  const { data: tasks, createTask } = useTasks(userId);
+  const { createTask } = useTasks(userId);
   const { data: stats } = useStats(userId);
   const { data: scores } = useScores(userId);
   const { data: recommendations, isLoading: recsLoading } = useRecommendations(userId);
@@ -46,7 +45,7 @@ export function HomePage() {
   };
   const getGreeting = () => {
     if (userRole === 'admin') return 'KocFlow Admin 🛠️';
-    if (userRole === 'koç') return `Hoş Geldin Koç, ${userEmail?.split('@')[0]}!`;
+    if (userRole === 'koç') return `Hoş Geldin Koç, ${userEmail?.split('@')[0] || 'Dostum'}!`;
     return 'Selam Şampiyon! 👋';
   };
   if (!userRole || (userRole !== 'öğrenci' && (userRole === 'koç' || userRole === 'admin'))) {

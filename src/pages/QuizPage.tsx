@@ -11,12 +11,12 @@ import { cn } from '@/lib/utils';
 import type { QuizResult } from '@shared/types';
 const MOCK_QUESTIONS = [
   { id: '1', subject: 'Matematik', text: "x < x² ve x³ < x şartını sağlayan x değerleri hangi aralıktadır?", options: ["(-1, 0)", "(0, 1)", "(1, 2)", "(-∞, -1)"], correct: 0 },
-  { id: '2', subject: 'Türkçe', text: '"Pek çok" kelimesinin yazımı hangisinde doğrudur?', options: ["Pekçok", "Pek çok", "Pek-çok", "Pek çoklar"], correct: 1 },
+  { id: '2', subject: 'Türkçe', text: '"Pek çok" kelimesinin yazımı hangisinde doğrudur?', options: ["Pek çok", "Pekçok", "Pek-çok", "Pek çoklar"], correct: 0 },
   { id: '3', subject: 'Matematik', text: "Ardışık 5 çift tam sayının toplamı 60 ise en büyüğü kaçtır?", options: ["14", "16", "18", "12"], correct: 1 },
   { id: '4', subject: 'Türkçe', text: '"Sessiz harf türemesi" hangisinde vardır?', options: ["Geliyor", "Hakkımız", "Gidiyor", "Bilgi"], correct: 1 },
   { id: '5', subject: 'Matematik', text: "30 sayısının %40'ı kaçtır?", options: ["10", "12", "14", "15"], correct: 1 },
 ];
-const INITIAL_TIME = 300; // 5 mins
+const INITIAL_TIME = 300; 
 export function QuizPage() {
   const [step, setStep] = useState<'intro' | 'active' | 'results'>('intro');
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -31,8 +31,8 @@ export function QuizPage() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     let correctCount = 0;
-    finalAnswers.forEach((ans, i) => {
-      if (ans === MOCK_QUESTIONS[i].correct) correctCount++;
+    MOCK_QUESTIONS.forEach((q, i) => {
+      if (finalAnswers[i] === q.correct) correctCount++;
     });
     const timeSpent = startTimeRef.current
       ? Math.floor((Date.now() - startTimeRef.current) / 1000)
@@ -70,17 +70,11 @@ export function QuizPage() {
     let timer: any;
     if (step === 'active' && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft(t => {
-          if (t <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return t - 1;
-        });
+        setTimeLeft(t => t - 1);
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [step, timeLeft]);
+  }, [step, timeLeft > 0]);
   useEffect(() => {
     if (timeLeft === 0 && step === 'active' && !isSubmitting) {
       handleSubmit(answers);

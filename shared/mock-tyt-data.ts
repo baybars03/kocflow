@@ -12,6 +12,7 @@ export interface DenemeScore {
   fen: number;
   totalNet: number;
 }
+export const TARGET_DATE = new Date('2025-06-14');
 export const MOCK_TYT_TASKS: TYTTask[] = [
   { id: '1', subject: 'Matematik', topic: 'Rasyonel Sayılar', done: true },
   { id: '2', subject: 'Türkçe', topic: 'Paragrafta Anlam', done: false },
@@ -27,8 +28,15 @@ export const MOCK_DENEME_SCORES: DenemeScore[] = [
 ];
 export const MOCK_QUOTE = "Başarı, her gün tekrarlanan küçük çabaların toplamıdır. 🚀";
 export const SUBJECT_COLORS = {
-  Matematik: 'bg-playful-teal',
-  Türkçe: 'bg-playful-red',
-  Sosyal: 'bg-playful-yellow',
-  Fen: 'bg-green-400',
+  Matematik: 'bg-playful-teal text-white',
+  Türkçe: 'bg-playful-red text-white',
+  Sosyal: 'bg-playful-yellow text-playful-dark',
+  Fen: 'bg-green-400 text-playful-dark',
+  İngilizce: 'bg-purple-400 text-white',
+  'Din Kültürü': 'bg-orange-400 text-white',
+  Geometri: 'bg-blue-400 text-white',
+  'LGS-Matematik': 'bg-playful-teal text-white',
+  'LGS-Fen': 'bg-green-400 text-playful-dark',
+  'LGS-Türkçe': 'bg-playful-red text-white',
+  'LGS-Sosyal': 'bg-playful-yellow text-playful-dark',
 };
