@@ -47,8 +47,8 @@ export function HomePage() {
   };
   if (userRole !== 'öğrenci') return <div className="flex items-center justify-center p-20"><Loader2 className="w-12 h-12 animate-spin text-playful-teal" /></div>;
   return (
-    <div {...handlers} className="space-y-8 animate-in fade-in duration-500 pb-20 no-print">
-      <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+    <div {...handlers} className="space-y-8 animate-in fade-in duration-500 pb-20">
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-between no-print">
         <div className="space-y-2 text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-black text-playful-dark tracking-tight">Selam Şampiyon! 👋</h1>
           <p className="text-lg font-bold text-muted-foreground">Bugün harika bir gün olacak.</p>
@@ -66,7 +66,7 @@ export function HomePage() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="space-y-4">
+          <div className="space-y-4 no-print">
              <h2 className="text-2xl font-black flex items-center gap-2 px-2">
                <Sparkles className="w-6 h-6 text-playful-yellow fill-current" /> Sana Özel Öneriler
              </h2>
@@ -111,19 +111,21 @@ export function HomePage() {
           </PlayfulCard>
         </div>
         <div className="space-y-6">
-          <PlayfulCard className="bg-playful-yellow text-playful-dark flex flex-col items-center justify-center p-8 border-playful-dark shadow-playful">
+          <PlayfulCard className="bg-playful-yellow text-playful-dark flex flex-col items-center justify-center p-8 border-playful-dark shadow-playful print-section">
             <TrendingUp className="w-14 h-14 mb-4" strokeWidth={3} />
             <span className="text-xs font-black uppercase tracking-widest opacity-80">Genel Net Ortalaması</span>
             <span className="text-6xl font-black my-2 tracking-tighter">{avgNet}</span>
           </PlayfulCard>
-          <PlayfulCard className="bg-playful-teal text-white border-playful-dark shadow-playful flex flex-col items-center justify-center p-6 text-center">
+          <PlayfulCard className="bg-playful-teal text-white border-playful-dark shadow-playful flex flex-col items-center justify-center p-6 text-center no-print">
              <Star className="w-10 h-10 mb-3 fill-white" />
              <p className="font-black">Günün Sözü</p>
              <p className="italic font-bold">"{MOCK_QUOTE}"</p>
           </PlayfulCard>
         </div>
       </div>
-      <AITutor />
+      <div className="no-print">
+        <AITutor />
+      </div>
     </div>
   );
 }

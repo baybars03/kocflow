@@ -46,13 +46,13 @@ export function TasksPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-left-4 duration-500">
       <div className="lg:col-span-8 space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between no-print">
           <div>
             <h1 className="text-4xl font-black text-playful-dark">Görevlerim</h1>
             <p className="font-bold text-muted-foreground">Adım adım başarıya!</p>
           </div>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => setShowPomo(!showPomo)}
               className={cn("p-4 border-4 border-playful-dark rounded-xl shadow-playful transition-all", showPomo ? "bg-playful-red text-white" : "bg-white")}
             >
@@ -86,23 +86,23 @@ export function TasksPage() {
                {tasks.map((task) => (
                  <motion.div key={task.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                     <PlayfulCard className={cn("flex items-center gap-4 group py-4", task.done && "bg-slate-50 opacity-60 grayscale")}>
-                      <div onClick={() => handleToggle(task.id, task.done)} className={cn("w-10 h-10 border-4 border-playful-dark rounded-lg flex items-center justify-center cursor-pointer transition-all", task.done ? "bg-playful-teal" : "bg-white shadow-playful-active")}>
+                      <div onClick={() => handleToggle(task.id, task.done)} className={cn("w-10 h-10 border-4 border-playful-dark rounded-lg flex items-center justify-center cursor-pointer transition-all no-print", task.done ? "bg-playful-teal" : "bg-white shadow-playful-active")}>
                         {task.done && <Check className="w-6 h-6 text-white" strokeWidth={5} />}
                       </div>
                       <div className="flex-1">
                         <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark", SUBJECT_COLORS[task.subject])}>{task.subject}</span>
                         <h3 className={cn("text-lg font-bold truncate", task.done && "line-through")}>{task.topic}</h3>
                       </div>
-                      <button onClick={() => deleteTask.mutate(task.id)} className="opacity-0 group-hover:opacity-100 p-2 text-playful-red"><Trash2 className="w-5 h-5" /></button>
+                      <button onClick={() => deleteTask.mutate(task.id)} className="opacity-0 group-hover:opacity-100 p-2 text-playful-red no-print"><Trash2 className="w-5 h-5" /></button>
                     </PlayfulCard>
                  </motion.div>
                ))}
              </AnimatePresence>
-           ) : <div className="text-center py-20 text-slate-400 font-bold">Henüz görev yok!</div>
+           ) : <div className="text-center py-20 text-slate-400 font-bold no-print">Henüz görev yok!</div>
           }
         </div>
       </div>
-      <div className="lg:col-span-4 space-y-6">
+      <div className="lg:col-span-4 space-y-6 no-print">
         {showPomo ? (
           <PomodoroTimer onComplete={() => completePomo.mutate()} />
         ) : (

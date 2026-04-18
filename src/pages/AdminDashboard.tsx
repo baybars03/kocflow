@@ -8,16 +8,16 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAdminAnalytics, useUpdateUser, useDeleteUser } from '@/hooks/use-tyt-api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 const COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1e293b'];
 export function AdminDashboard() {
@@ -53,9 +53,9 @@ export function AdminDashboard() {
     window.print();
   };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 no-print">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
       <div className="py-8 md:py-10 lg:py-12 space-y-10 animate-in fade-in duration-500">
-        <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-6 items-center justify-between no-print">
           <div className="space-y-2 text-center md:text-left">
             <h1 className="text-4xl md:text-5xl font-black text-playful-dark">Komuta Merkezi 🛡️</h1>
             <p className="text-lg font-bold text-muted-foreground">Platform genel durumu ve kullanıcı yönetimi.</p>
@@ -120,10 +120,10 @@ export function AdminDashboard() {
             <p className="text-3xl font-black">{stats.coaches}</p>
           </div>
         </div>
-        <PlayfulCard className="p-0 overflow-hidden border-4 bg-white">
+        <PlayfulCard className="p-0 overflow-hidden border-4 bg-white print-section">
           <div className="p-6 border-b-4 border-playful-dark bg-slate-50 flex items-center justify-between">
             <h3 className="text-xl font-black flex items-center gap-2"><Users className="w-6 h-6" /> Kullanıcı Listesi</h3>
-            <div className="flex gap-2">
+            <div className="flex gap-2 no-print">
                <span className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase"><Crown className="w-4 h-4 text-playful-yellow fill-current" /> Premium Statüsü</span>
             </div>
           </div>
@@ -134,7 +134,7 @@ export function AdminDashboard() {
                   <th className="px-6 py-4 font-black text-sm">KULLANICI</th>
                   <th className="px-6 py-4 font-black text-sm text-center">ROL</th>
                   <th className="px-6 py-4 font-black text-sm text-center">PREMIUM</th>
-                  <th className="px-6 py-4 font-black text-sm text-right">EYLEMLER</th>
+                  <th className="px-6 py-4 font-black text-sm text-right no-print">EYLEMLER</th>
                 </tr>
               </thead>
               <tbody>
@@ -156,6 +156,7 @@ export function AdminDashboard() {
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleRoleToggle(user)}
+                        disabled={true} /* Disabled role toggle in display-only areas */
                         className={cn(
                           "px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark transition-all",
                           user.role === 'öğrenci' ? "bg-playful-teal text-white" : "bg-playful-red text-white"
@@ -165,17 +166,14 @@ export function AdminDashboard() {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handlePremiumToggle(user)}
-                        className={cn(
-                          "p-2 rounded-lg border-2 border-playful-dark transition-all",
-                          user.isPremium ? "bg-playful-yellow shadow-playful-active" : "bg-white text-slate-300"
-                        )}
-                      >
+                      <div className={cn(
+                        "inline-block p-2 rounded-lg border-2 border-playful-dark transition-all",
+                        user.isPremium ? "bg-playful-yellow" : "bg-white text-slate-300"
+                      )}>
                         <Crown className="w-5 h-5 fill-current" />
-                      </button>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-right no-print">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                            <button className="p-2 text-playful-red hover:bg-playful-red hover:text-white rounded-lg transition-all">

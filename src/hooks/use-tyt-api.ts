@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest, ChatMessage, Notification, AIChatMessage } from '@shared/types';
+import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest, ChatMessage, Notification } from '@shared/types';
 export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -102,7 +102,7 @@ export function useNotifications(userId?: string) {
     refetchInterval: 10000,
   });
   const markAsRead = useMutation({
-    mutationFn: (id: string) => api(`/api/notifications/${id}/read', { method: 'PATCH' }),
+    mutationFn: (id: string) => api(`/api/notifications/${id}/read`, { method: 'PATCH' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
     },
