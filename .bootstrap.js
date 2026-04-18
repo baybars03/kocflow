@@ -81,7 +81,8 @@ function runSetupCommands() {
     "bun add canvas-confetti@^1.9.0",
     "bun add lucide-react clsx tailwind-merge framer-motion zustand",
     "bun add canvas-confetti",
-    "bun add react-swipeable"
+    "bun add react-swipeable",
+    "bun add embla-carousel-react"
 ];
     
     if (commands.length === 0) {
