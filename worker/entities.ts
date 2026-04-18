@@ -1,5 +1,5 @@
 import { IndexedEntity } from "./core-utils";
-import type { TYTTask, DenemeScore, User } from "@shared/types";
+import type { TYTTask, DenemeScore, User, ChatMessage, Notification } from "@shared/types";
 import { MOCK_TYT_TASKS, MOCK_DENEME_SCORES } from "@shared/mock-tyt-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
@@ -54,4 +54,39 @@ export class ScoreEntity extends IndexedEntity<DenemeScore> {
     id: crypto.randomUUID(),
     userId: "demo-ogrenci-1"
   }));
+}
+export class ChatMessageEntity extends IndexedEntity<ChatMessage> {
+  static readonly entityName = "chat_message";
+  static readonly indexName = "chat_messages";
+  static readonly initialState: ChatMessage = {
+    id: "",
+    senderId: "",
+    receiverId: "",
+    text: "",
+    timestamp: 0
+  };
+}
+export class NotificationEntity extends IndexedEntity<Notification> {
+  static readonly entityName = "notification";
+  static readonly indexName = "notifications";
+  static readonly initialState: Notification = {
+    id: "",
+    userId: "",
+    title: "",
+    message: "",
+    type: "system",
+    read: false,
+    createdAt: 0
+  };
+  static seedData: Notification[] = [
+    { 
+      id: "seed-notif-1", 
+      userId: "demo-ogrenci-1", 
+      title: "Hoş Geldin! ✨", 
+      message: "Kampüs yolculuğun başlıyor, başarılar şampiyon!", 
+      type: "system", 
+      read: false, 
+      createdAt: Date.now() 
+    }
+  ];
 }

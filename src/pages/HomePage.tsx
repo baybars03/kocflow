@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Loader2, Flame, TrendingUp, Sparkles, Plus, Star, Zap, FileDown } from 'lucide-react';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
 import { MOCK_QUOTE, SUBJECT_COLORS } from '@shared/mock-tyt-data';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { differenceInDays, isAfter } from 'date-fns';
 import { toast } from 'sonner';
+import { useSwipeable } from 'react-swipeable';
+import { AITutor } from '@/components/ai/AITutor';
 import type { TYTSubject } from '@shared/types';
 export function HomePage() {
   const navigate = useNavigate();
@@ -26,6 +28,11 @@ export function HomePage() {
     if (userRole === 'koç') navigate('/coach');
     else if (userRole === 'admin') navigate('/admin');
   }, [userRole, navigate]);
+  const handlers = useSwipeable({
+    onSwipedLeft: () => userRole === 'öğrenci' && navigate('/tasks'),
+    preventScrollOnSwipe: true,
+    trackMouse: true
+  });
   const avgNet = scores && scores.length > 0
     ? (scores.reduce((acc, s) => acc + s.totalNet, 0) / scores.length).toFixed(1)
     : '0';
@@ -35,19 +42,27 @@ export function HomePage() {
       onSuccess: () => toast.success(`${topic} görevin eklendi! ✨`)
     });
   };
+  const handlePrint = () => {
+    window.print();
+  };
   if (userRole !== 'öğrenci') return <div className="flex items-center justify-center p-20"><Loader2 className="w-12 h-12 animate-spin text-playful-teal" /></div>;
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div {...handlers} className="space-y-8 animate-in fade-in duration-500 pb-20 no-print">
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="space-y-2 text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-black text-playful-dark tracking-tight">Selam Şampiyon! 👋</h1>
           <p className="text-lg font-bold text-muted-foreground">Bugün harika bir gün olacak.</p>
         </div>
-        <PlayfulCard className={cn("flex flex-col items-center py-5 px-10 border-playful-dark shadow-playful", examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white")}>
-          <span className="text-sm font-bold uppercase tracking-widest">TYT'ye Kalan</span>
-          <span className="text-5xl font-black leading-none my-1">{remainingDays > 0 ? remainingDays : 0}</span>
-          <span className="text-sm font-bold uppercase tracking-widest">Gün</span>
-        </PlayfulCard>
+        <div className="flex items-center gap-4">
+          <button onClick={handlePrint} className="p-4 border-4 border-playful-dark rounded-xl bg-white shadow-playful hover:-translate-y-1 transition-all">
+            <FileDown className="w-6 h-6" />
+          </button>
+          <PlayfulCard className={cn("flex flex-col items-center py-5 px-10 border-playful-dark shadow-playful min-w-[140px]", examPassed ? "bg-playful-teal text-white" : "bg-playful-red text-white")}>
+            <span className="text-sm font-bold uppercase tracking-widest">TYT'ye Kalan</span>
+            <span className="text-5xl font-black leading-none my-1">{remainingDays > 0 ? remainingDays : 0}</span>
+            <span className="text-sm font-bold uppercase tracking-widest">Gün</span>
+          </PlayfulCard>
+        </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
@@ -74,7 +89,7 @@ export function HomePage() {
                }
              </div>
           </div>
-          <PlayfulCard className="bg-white border-playful-dark shadow-playful">
+          <PlayfulCard className="bg-white border-playful-dark shadow-playful print-section">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-4">
                 <div className="p-4 bg-playful-dark text-white rounded-2xl">
@@ -108,6 +123,7 @@ export function HomePage() {
           </PlayfulCard>
         </div>
       </div>
+      <AITutor />
     </div>
   );
 }

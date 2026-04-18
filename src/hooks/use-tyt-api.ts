@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest } from '@shared/types';
+import type { TYTTask, DenemeScore, UserStats, Recommendation, LeaderboardEntry, AdminAnalytics, User, CoachStudentStats, BulkTaskRequest, ChatMessage, Notification, AIChatMessage } from '@shared/types';
 export function useTasks(userId?: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -77,7 +77,43 @@ export function useCompletePomodoro(userId?: string) {
     },
   });
 }
-// Phase 11 Unicorn Hooks
+export function useChat(otherUserId?: string, currentUserId?: string) {
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ['chat', otherUserId, currentUserId],
+    queryFn: () => api<ChatMessage[]>(`/api/chat/${otherUserId}?viewerId=${currentUserId}`),
+    enabled: !!otherUserId && !!currentUserId,
+    refetchInterval: 5000,
+  });
+  const sendMutation = useMutation({
+    mutationFn: (msg: Omit<ChatMessage, 'id' | 'timestamp'>) => api<ChatMessage>('/api/chat', { method: 'POST', body: JSON.stringify(msg) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', otherUserId, currentUserId] });
+    },
+  });
+  return { ...query, sendMessage: sendMutation };
+}
+export function useNotifications(userId?: string) {
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ['notifications', userId],
+    queryFn: () => api<Notification[]>(`/api/notifications/${userId}`),
+    enabled: !!userId,
+    refetchInterval: 10000,
+  });
+  const markAsRead = useMutation({
+    mutationFn: (id: string) => api(`/api/notifications/${id}/read', { method: 'PATCH' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+    },
+  });
+  return { ...query, markAsRead };
+}
+export function useAITutor() {
+  return useMutation({
+    mutationFn: (message: string) => api<{ content: string; timestamp: number }>('/api/ai/ask', { method: 'POST', body: JSON.stringify({ message }) }),
+  });
+}
 export function useAdminAnalytics() {
   return useQuery({
     queryKey: ['admin-analytics'],

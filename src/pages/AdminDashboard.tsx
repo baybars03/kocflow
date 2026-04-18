@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { PlayfulCard } from '@/components/ui/PlayfulCard';
-import { ShieldCheck, Users, Mail, UserPlus, Loader2, Activity, Trash2, Crown, UserCircle2 } from 'lucide-react';
+import { ShieldCheck, Users, Mail, UserPlus, Loader2, Activity, Trash2, Crown, UserCircle2, FileDown } from 'lucide-react';
 import type { User as UserType } from '@shared/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAdminAnalytics, useUpdateUser, useDeleteUser } from '@/hooks/use-tyt-api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/dialog";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
 const COLORS = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1e293b'];
 export function AdminDashboard() {
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -39,21 +49,28 @@ export function AdminDashboard() {
       onSuccess: () => toast.error("Kullanıcı silindi.")
     });
   };
+  const handleExport = () => {
+    window.print();
+  };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 no-print">
       <div className="py-8 md:py-10 lg:py-12 space-y-10 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
           <div className="space-y-2 text-center md:text-left">
             <h1 className="text-4xl md:text-5xl font-black text-playful-dark">Komuta Merkezi 🛡️</h1>
             <p className="text-lg font-bold text-muted-foreground">Platform genel durumu ve kullanıcı yönetimi.</p>
           </div>
-          <PlayfulCard className="bg-playful-yellow py-3 px-6 flex items-center gap-3 border-playful-dark shadow-playful">
-            <Activity className="w-6 h-6 animate-pulse" strokeWidth={3} />
-            <span className="font-black text-lg">SİSTEM ÇALIŞIYOR</span>
-          </PlayfulCard>
+          <div className="flex gap-4">
+            <button onClick={handleExport} className="p-4 border-4 border-playful-dark rounded-xl bg-white shadow-playful hover:translate-y-[-2px] transition-all">
+               <FileDown className="w-6 h-6" />
+            </button>
+            <PlayfulCard className="bg-playful-yellow py-3 px-6 flex items-center gap-3 border-playful-dark shadow-playful">
+              <Activity className="w-6 h-6 animate-pulse" strokeWidth={3} />
+              <span className="font-black text-lg uppercase tracking-tighter">SİSTEM AKTİF</span>
+            </PlayfulCard>
+          </div>
         </div>
-        {/* Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print-section">
           <PlayfulCard className="h-80 bg-white">
             <h3 className="font-black text-xl mb-4 flex items-center gap-2">
               <Activity className="text-playful-red" /> Kullanıcı Artış Trendi
@@ -85,31 +102,29 @@ export function AdminDashboard() {
             </ResponsiveContainer>
           </PlayfulCard>
         </div>
-        {/* Global Counters */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-section">
           <div className="playful-card bg-playful-teal text-white p-4 text-center">
-            <p className="text-xs font-black uppercase">Retention</p>
+            <p className="text-[10px] font-black uppercase">Retention</p>
             <p className="text-3xl font-black">%{analytics?.retentionRate || 0}</p>
           </div>
           <div className="playful-card bg-playful-red text-white p-4 text-center">
-            <p className="text-xs font-black uppercase">Öğrenciler</p>
+            <p className="text-[10px] font-black uppercase">Öğrenciler</p>
             <p className="text-3xl font-black">{stats.students}</p>
           </div>
           <div className="playful-card bg-playful-yellow text-playful-dark p-4 text-center">
-            <p className="text-xs font-black uppercase">Aktif Seans</p>
+            <p className="text-[10px] font-black uppercase">Aktif Seans</p>
             <p className="text-3xl font-black">{analytics?.activeSessions || 0}</p>
           </div>
           <div className="playful-card bg-playful-dark text-white p-4 text-center">
-            <p className="text-xs font-black uppercase">Koçlar</p>
+            <p className="text-[10px] font-black uppercase">Koçlar</p>
             <p className="text-3xl font-black">{stats.coaches}</p>
           </div>
         </div>
-        {/* User Table */}
-        <PlayfulCard className="p-0 overflow-hidden border-4">
+        <PlayfulCard className="p-0 overflow-hidden border-4 bg-white">
           <div className="p-6 border-b-4 border-playful-dark bg-slate-50 flex items-center justify-between">
             <h3 className="text-xl font-black flex items-center gap-2"><Users className="w-6 h-6" /> Kullanıcı Listesi</h3>
             <div className="flex gap-2">
-               <span className="flex items-center gap-1 text-xs font-black text-muted-foreground"><Crown className="w-4 h-4 text-playful-yellow fill-current" /> Premium</span>
+               <span className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase"><Crown className="w-4 h-4 text-playful-yellow fill-current" /> Premium Statüsü</span>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -139,7 +154,7 @@ export function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button 
+                      <button
                         onClick={() => handleRoleToggle(user)}
                         className={cn(
                           "px-3 py-1 rounded-full text-[10px] font-black uppercase border-2 border-playful-dark transition-all",
@@ -150,7 +165,7 @@ export function AdminDashboard() {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button 
+                      <button
                         onClick={() => handlePremiumToggle(user)}
                         className={cn(
                           "p-2 rounded-lg border-2 border-playful-dark transition-all",
@@ -161,12 +176,23 @@ export function AdminDashboard() {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => handleDelete(user.id)}
-                        className="p-2 text-playful-red hover:bg-playful-red hover:text-white rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <button className="p-2 text-playful-red hover:bg-playful-red hover:text-white rounded-lg transition-all">
+                             <Trash2 className="w-5 h-5" />
+                           </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="border-4 border-playful-dark rounded-[2rem]">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-2xl font-black">Kullanıcıyı Sil?</AlertDialogTitle>
+                            <AlertDialogDescription className="font-bold">Bu işlem geri alınamaz. Kullanıcının tüm verileri silinecektir.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="playful-button bg-white text-playful-dark">İptal</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(user.id)} className="playful-button bg-playful-red text-white">Evet, Sil</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </td>
                   </tr>
                 ))}

@@ -1,21 +1,69 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { TaskEntity, ScoreEntity, UserEntity } from "./entities";
+import { TaskEntity, ScoreEntity, UserEntity, ChatMessageEntity, NotificationEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats } from "@shared/types";
+import type { TYTTask, DenemeScore, UserStats, LoginRequest, SignupRequest, Recommendation, LeaderboardEntry, TYTSubject, User, AdminAnalytics, BulkTaskRequest, CoachStudentStats, ChatMessage, Notification } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  // NOTIFICATIONS
+  app.get('/api/notifications/:userId', async (c) => {
+    const userId = c.req.param('userId');
+    const res = await NotificationEntity.list(c.env);
+    const userNotifs = res.items
+      .filter(n => n.userId === userId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+    return ok(c, userNotifs);
+  });
+  app.patch('/api/notifications/:id/read', async (c) => {
+    const id = c.req.param('id');
+    const entity = new NotificationEntity(c.env, id);
+    const updated = await entity.mutate(s => ({ ...s, read: true }));
+    return ok(c, updated);
+  });
+  // CHAT
+  app.get('/api/chat/:userId', async (c) => {
+    const currentUserId = c.req.query('viewerId');
+    const otherUserId = c.req.param('userId');
+    const res = await ChatMessageEntity.list(c.env);
+    const messages = res.items
+      .filter(m => 
+        (m.senderId === currentUserId && m.receiverId === otherUserId) ||
+        (m.senderId === otherUserId && m.receiverId === currentUserId)
+      )
+      .sort((a, b) => a.timestamp - b.timestamp);
+    return ok(c, messages);
+  });
+  app.post('/api/chat', async (c) => {
+    const body = await c.req.json() as Omit<ChatMessage, 'id' | 'timestamp'>;
+    const msg: ChatMessage = {
+      ...body,
+      id: crypto.randomUUID(),
+      timestamp: Date.now()
+    };
+    return ok(c, await ChatMessageEntity.create(c.env, msg));
+  });
+  // MOCK AI TUTOR
+  app.post('/api/ai/ask', async (c) => {
+    const { message } = await c.req.json();
+    const responses = [
+      "Harika bir soru! TYT'de bu konu genellikle pratikle çözülür. 🚀",
+      "Küçük adımlar büyük yollar açar şampiyon! Bugün 20 paragraf çözmeye ne dersin?",
+      "Pes etmek yok! TYT bir maratondur, depar değil. Biraz dinlen ve devam et. ⚡",
+      "Matematik aslında bir bulmaca gibidir. Temel kavramları oturttuğunda gerisi çorap söküğü gibi gelecek!",
+      "Odaklanma sorunu yaşıyorsan Pomodoro tekniğini denemelisin. Ben yanındayım!"
+    ];
+    const randomRes = responses[Math.floor(Math.random() * responses.length)];
+    return ok(c, { content: randomRes, timestamp: Date.now() });
+  });
   // ADMIN ANALYTICS
   app.get('/api/admin/analytics', async (c) => {
     const users = await UserEntity.list(c.env);
     const tasks = await TaskEntity.list(c.env);
-    // Growth Trend (Mocked by grouping existing users)
     const growth = [
       { date: 'Pzt', count: Math.floor(users.items.length * 0.6) },
       { date: 'Sal', count: Math.floor(users.items.length * 0.7) },
       { date: 'Çar', count: Math.floor(users.items.length * 0.8) },
       { date: 'Per', count: users.items.length }
     ];
-    // Popular Subjects
     const subCount: Record<string, number> = {};
     tasks.items.forEach(t => { subCount[t.subject] = (subCount[t.subject] || 0) + 1; });
     const popularTasks = Object.entries(subCount).map(([subject, count]) => ({ subject, count }));
@@ -27,7 +75,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     };
     return ok(c, analytics);
   });
-  // USER MANAGEMENT
   app.put('/api/admin/users/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json();
@@ -40,7 +87,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const success = await UserEntity.delete(c.env, id);
     return ok(c, { success });
   });
-  // COACH ENDPOINTS
   app.get('/api/coach/students/:coachId', async (c) => {
     const coachId = c.req.param('coachId');
     const usersRes = await UserEntity.list(c.env);
@@ -77,7 +123,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await Promise.all(creations);
     return ok(c, { count: studentIds.length });
   });
-  // EXISTING ROUTES...
   app.get('/api/ai-tasks/:userId', async (c) => {
     const userId = c.req.param('userId');
     const scoresRes = await ScoreEntity.list(c.env);
@@ -136,6 +181,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { email } = await c.req.json() as LoginRequest;
     if (!email) return bad(c, 'Email is required');
     await UserEntity.ensureSeed(c.env);
+    await NotificationEntity.ensureSeed(c.env);
     const users = await UserEntity.list(c.env);
     const user = users.items.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (!user) return bad(c, 'Kullanıcı bulunamadı');
@@ -147,7 +193,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { user: await UserEntity.create(c.env, newUser), token: 'mock-token' });
   });
   app.get('/api/admin/users', async (c) => ok(c, (await UserEntity.list(c.env)).items));
-  app.get('/api/coach/students', async (c) => ok(c, (await UserEntity.list(c.env)).items.filter(u => u.role === 'öğrenci')));
   app.get('/api/tasks', async (c) => {
     const userId = c.req.query('userId');
     const page = await TaskEntity.list(c.env);

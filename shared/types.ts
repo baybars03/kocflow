@@ -14,6 +14,7 @@ export interface User {
   pomodoroSessions?: number;
   isPremium?: boolean;
   isSuspended?: boolean;
+  isAITutorActive?: boolean;
   createdAt?: number;
 }
 export interface AuthResponse {
@@ -69,7 +70,27 @@ export interface LeaderboardEntry {
   level: number;
   isCurrentUser?: boolean;
 }
-// Phase 11: Unicorn Types
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  timestamp: number;
+}
+export interface AIChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'task' | 'streak' | 'chat' | 'system';
+  read: boolean;
+  createdAt: number;
+}
 export interface AdminAnalytics {
   totalGrowth: { date: string; count: number }[];
   retentionRate: number;

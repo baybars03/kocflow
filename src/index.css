@@ -40,3 +40,26 @@
     @apply bg-white border-4 border-playful-dark rounded-xl px-4 py-2 focus:outline-none focus:ring-0 placeholder:text-muted-foreground;
   }
 }
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  nav {
+    display: none !important;
+  }
+  .fixed {
+    display: none !important;
+  }
+  body {
+    background-color: white !important;
+  }
+  .playful-card {
+    box-shadow: none !important;
+    border: 2px solid black !important;
+    break-inside: avoid;
+    margin-bottom: 20px;
+  }
+  .print-section {
+    display: block !important;
+  }
+}
