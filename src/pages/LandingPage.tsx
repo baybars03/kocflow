@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { RoleSelectionPopup } from '@/components/landing/RoleSelectionPopup';
 import { StudentLandingView } from '@/components/landing/StudentLandingView';
 import { CoachLandingView } from '@/components/landing/CoachLandingView';
 export function LandingPage() {
+  const navigate = useNavigate();
   const isHydrated = useAuth((s) => s.isHydrated);
   const userId = useAuth((s) => s.user?.id);
+  const userRole = useAuth((s) => s.user?.role);
   const isLoggedIn = !!userId;
   const [activeFunnel, setActiveFunnel] = useState<'öğrenci' | 'koç' | null>(null);
+  useEffect(() => {
+    // Redirect authenticated users to their dashboard immediately
+    if (isHydrated && isLoggedIn && userRole) {
+      if (userRole === 'öğrenci') navigate('/dashboard', { replace: true });
+      else if (userRole === 'koç') navigate('/coach', { replace: true });
+      else if (userRole === 'admin') navigate('/admin', { replace: true });
+    }
+  }, [isHydrated, isLoggedIn, userRole, navigate]);
   useEffect(() => {
     window.scrollTo(0, 0);
     const savedFunnel = localStorage.getItem('kocflow-funnel-pref') as 'öğrenci' | 'koç' | null;
@@ -35,8 +46,13 @@ export function LandingPage() {
       </div>
     );
   }
+  // If user is already logged in, the useEffect will handle redirection.
+  // We return null here to avoid a flash of the landing page for authenticated users.
+  if (isLoggedIn) {
+    return null;
+  }
   // Primary gateway for unauthenticated users without a saved preference
-  if (!isLoggedIn && !activeFunnel) {
+  if (!activeFunnel) {
     return <RoleSelectionPopup onSelect={handleRoleSelect} />;
   }
   // Transition to specific views based on funnel

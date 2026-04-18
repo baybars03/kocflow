@@ -147,7 +147,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
           : 0;
         return {
           displayName: u.email ? u.email.split('@')[0] : 'Anonim',
-          avgNet: avgNetValue,
+          avgNet: isNaN(avgNetValue) ? 0 : avgNetValue,
           level: Math.floor((u.pomodoroSessions || 0) / 5) + 1,
         };
       })
@@ -309,7 +309,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tasks = tasksRes.items.filter(t => t.userId === userId);
     const scores = scoresRes.items.filter(s => s.userId === userId);
     const completed = tasks.filter(t => t.done).length;
-    const currentPoints = (completed * 50) + (scores.length * 100) + ((user.pomodoroSessions || 0) * 100);
+    // Safety check for pomodoroSessions
+    const pomodoroCount = user.pomodoroSessions ?? 0;
+    const currentPoints = (completed * 50) + (scores.length * 100) + (pomodoroCount * 100);
     const stats: UserStats = {
       level: Math.floor(currentPoints / 250) + 1,
       points: currentPoints,
@@ -318,7 +320,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       nextLevelPoints: 250,
       progressToNextLevel: Math.floor(((currentPoints % 250) / 250) * 100),
       streakDays: 1,
-      pomodoroSessions: user.pomodoroSessions ?? 0
+      pomodoroSessions: pomodoroCount
     };
     return ok(c, stats);
   });

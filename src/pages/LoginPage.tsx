@@ -15,7 +15,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const handleLogin = async (e?: React.FormEvent, directEmail?: string, directPass?: string) => {
     if (e) e.preventDefault();
-    const loginEmail = directEmail || email;
+    const loginEmail = (directEmail || email).trim();
     const loginPass = directPass || password;
     if (!loginEmail || !loginPass) {
       toast.error('Lütfen e-posta ve şifrenizi girin.');
@@ -24,13 +24,24 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login({ email: loginEmail, password: loginPass });
+      // CRITICAL: Get current state after login call for redirection
       const user = useAuth.getState().user;
+      if (!user) {
+        throw new Error("Giriş yapıldı fakat kullanıcı bilgisi alınamadı.");
+      }
       toast.success("KocFlow'a başarıyla giriş yapıldı! 🚀");
-      if (user?.role === 'öğrenci') navigate('/dashboard');
-      else if (user?.role === 'koç') navigate('/coach');
-      else if (user?.role === 'admin') navigate('/admin');
-      else navigate('/');
+      const role = user.role;
+      if (role === 'öğrenci') {
+        navigate('/dashboard', { replace: true });
+      } else if (role === 'koç') {
+        navigate('/coach', { replace: true });
+      } else if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
+      console.error('Login error:', err);
       toast.error('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
     } finally {
       setLoading(false);
