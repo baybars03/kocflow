@@ -1,6 +1,6 @@
 # Cloudflare Workers React Template
 
-[![Deploy to Cloudflare Workers]([cloudflarebutton])]([cloudflarebutton])
+[![Deploy to Cloudflare Workers]([![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/baybars03/kocflow))]([![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/baybars03/kocflow))
 
 A production-ready full-stack template for Cloudflare Workers with a modern React frontend using shadcn/ui, Tailwind CSS, TypeScript, and Durable Objects for stateful backend entities. Perfect for building scalable, edge-deployed applications with real-time capabilities.
 
@@ -123,7 +123,7 @@ npx wrangler deploy
 wrangler deploy --name my-app
 ```
 
-[![Deploy to Cloudflare Workers]([cloudflarebutton])]([cloudflarebutton])
+[![Deploy to Cloudflare Workers]([![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/baybars03/kocflow))]([![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/baybars03/kocflow))
 
 ### Migrations
 
